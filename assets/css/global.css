@@ -1,0 +1,156 @@
+/* =============================
+   RESET DAN STYLE DASAR
+============================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: rgb(235, 235, 235);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Khusus halaman login bisa pakai class body.login agar background berbeda */
+body.login {
+    background: rgb(235, 235, 235);
+    padding: 80px 20px;
+}
+
+body.login input {
+    margin-bottom: 12px;
+}
+
+body.login button {
+    margin-top: 5px;
+}
+
+
+/* =============================
+   CONTAINER UMUM
+============================= */
+.container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 500px;
+}
+
+/* =============================
+   TITLE / HEADER FORM
+============================= */
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+/* =============================
+   FORM ELEMENTS
+============================= */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 500;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* =============================
+   BUTTON (UNIVERSAL)
+============================= */
+button {
+    width: 100%;
+    padding: 12px;
+    background: #0084ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+/* Khusus login button (opsional) */
+button.login-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* =============================
+   ALERT
+============================= */
+.alert {
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.alert-error {
+    background: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.alert-success {
+    background: #efe;
+    color: #3c3;
+    border: 1px solid #cfc;
+}
+
+/* =============================
+   LINK LOGIN / REGISTER
+============================= */
+.login-link, .register-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+}
+
+.login-link a, .register-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover, .register-link a:hover {
+    text-decoration: underline;
+}
+
+
