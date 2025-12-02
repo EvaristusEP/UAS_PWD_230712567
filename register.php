@@ -79,7 +79,7 @@ if (isset($_POST["register"])) {
 </head>
 <body>
     <div class="container">
-        <h2>📝 Registrasi Akun</h2>
+        <h2>Registrasi Akun</h2>
         
         <?php if ($register_message): ?>
             <div class="alert alert-error"><?php echo $register_message; ?></div>

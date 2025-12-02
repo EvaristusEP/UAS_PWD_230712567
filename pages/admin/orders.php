@@ -37,220 +37,7 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Pesanan - Admin</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-        }
-        
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .navbar-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .navbar h1 {
-            color: white;
-            font-size: 24px;
-        }
-        
-        .navbar-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .navbar-links a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-        }
-        
-        .navbar-links a:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        
-        .alert {
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        
-        .alert-error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
-        }
-        
-        .alert-success {
-            background: #efe;
-            color: #3c3;
-            border: 1px solid #cfc;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-        
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        table th {
-            background: #f9f9f9;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #eee;
-        }
-        
-        table td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            color: #666;
-        }
-        
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .status-completed {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .status-cancelled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .btn-detail {
-            padding: 6px 12px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 13px;
-            display: inline-block;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-        
-        .modal.active {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 800px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #eee;
-        }
-        
-        .close-modal {
-            font-size: 28px;
-            cursor: pointer;
-            color: #999;
-        }
-        
-        .order-info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .info-item strong {
-            display: block;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .status-form {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        
-        .status-form select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
-        
-        .status-form button {
-            padding: 8px 20px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="../../assets/css/admin.css">
 </head>
 <body>
     <?php include "../../layout/adminHeader.html" ?>
@@ -265,7 +52,7 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
         <?php endif; ?>
         
         <div class="card">
-            <h2>📦 Daftar Pesanan</h2>
+            <h2>Daftar Pesanan</h2>
             <table>
                 <thead>
                     <tr>
@@ -300,7 +87,7 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
                             <td>
                                 <a href="#" class="btn-detail" 
                                    onclick="viewOrderDetail(<?php echo $order['id']; ?>)">
-                                    👁️ Detail
+                                    Detail
                                 </a>
                             </td>
                         </tr>
@@ -314,7 +101,7 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
     <div id="orderModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📋 Detail Pesanan</h2>
+                <h2>Detail Pesanan</h2>
                 <span class="close-modal" onclick="closeModal()">&times;</span>
             </div>
             <div id="orderDetails"></div>

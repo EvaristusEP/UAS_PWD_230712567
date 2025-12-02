@@ -96,180 +96,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buat Pesanan - Apotek Online</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-        }
-        
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .navbar-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .navbar h1 {
-            color: white;
-            font-size: 24px;
-        }
-        
-        .navbar-links a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        
-        .order-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-        
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        
-        .medicine-info {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-        
-        .medicine-info h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        
-        .medicine-info p {
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .price-big {
-            font-size: 24px;
-            font-weight: 700;
-            color: #667eea;
-            margin-top: 10px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: 500;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        .total-section {
-            background: #e7f3ff;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        
-        .total-section h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .total-price {
-            font-size: 28px;
-            font-weight: 700;
-            color: #667eea;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: #ccc;
-            color: #333;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-        }
-        
-        .alert {
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        
-        .alert-error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
-        }
-        
-        .alert-success {
-            background: #efe;
-            color: #3c3;
-            border: 1px solid #cfc;
-        }
-    </style>
+    <link rel="stylesheet" href="../../assets/css/user.css">
 </head>
 <body>
     <?php include "../../layout/userheader.php" ?>
     
     <div class="container">
         <div class="order-card">
-            <h2>🛒 Buat Pesanan Baru</h2>
+            <h2>Buat Pesanan Baru</h2>
             
             <?php if ($error): ?>
                 <div class="alert alert-error"><?php echo $error; ?></div>
@@ -316,10 +150,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 <div class="button-group">
                     <button type="button" class="btn-secondary" onclick="window.location.href='index.php'">
-                        ❌ Batal
+                        Batal
                     </button>
                     <button type="submit" class="btn-primary">
-                        ✅ Buat Pesanan
+                        Buat Pesanan
                     </button>
                 </div>
             </form>

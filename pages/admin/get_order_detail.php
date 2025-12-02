@@ -36,27 +36,27 @@ $items = mysqli_query($db, $items_query);
     </div>
     
     <div class="info-item">
-        <strong>📧 Email</strong>
+        <strong>Email</strong>
         <span><?php echo htmlspecialchars($order['email']); ?></span>
     </div>
     
     <div class="info-item">
-        <strong>📅 Tanggal Pesanan</strong>
+        <strong>Tanggal Pesanan</strong>
         <span><?php echo date('d F Y, H:i', strtotime($order['order_date'])); ?></span>
     </div>
     
     <div class="info-item">
-        <strong>💳 Metode Pembayaran</strong>
+        <strong>Metode Pembayaran</strong>
         <span><?php echo htmlspecialchars($order['payment_method']); ?></span>
     </div>
     
     <div class="info-item" style="grid-column: 1 / -1;">
-        <strong>📍 Alamat</strong>
+        <strong>Alamat</strong>
         <span><?php echo htmlspecialchars($order['address'] ?? 'Tidak ada alamat'); ?></span>
     </div>
 </div>
 
-<h3 style="margin: 20px 0 10px 0; color: #333;">🛒 Item Pesanan</h3>
+<h3 style="margin: 20px 0 10px 0; color: #333;">Item Pesanan</h3>
 
 <table>
     <thead>
@@ -105,58 +105,8 @@ $items = mysqli_query($db, $items_query);
             <option value="completed" <?php echo $order['status'] == 'completed' ? 'selected' : ''; ?>>Completed</option>
             <option value="cancelled" <?php echo $order['status'] == 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
         </select>
-        <button type="submit" name="update_status">💾 Update Status</button>
+        <button type="submit" name="update_status">Update Status</button>
     </form>
 </div>
 
-<style>
-    .order-info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        margin-bottom: 20px;
-        padding: 20px;
-        background: #f9f9f9;
-        border-radius: 8px;
-    }
-    
-    .info-item strong {
-        display: block;
-        color: #666;
-        margin-bottom: 5px;
-        font-size: 14px;
-    }
-    
-    .info-item span {
-        color: #333;
-        font-size: 16px;
-    }
-    
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-    }
-    
-    table th {
-        background: #f9f9f9;
-        padding: 12px;
-        text-align: left;
-        font-weight: 600;
-        color: #333;
-        border-bottom: 2px solid #eee;
-    }
-    
-    table td {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
-        color: #666;
-    }
-    
-    .status-form {
-        background: #e7f3ff;
-        padding: 15px;
-        border-radius: 5px;
-        margin-top: 20px;
-    }
-</style>
+

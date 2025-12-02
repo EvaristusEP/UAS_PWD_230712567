@@ -35,38 +35,38 @@ $recent_orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name
     
     <div class="container">
         <div class="welcome">
-            <h2>Selamat Datang, <?php echo htmlspecialchars($_SESSION['full_name']); ?>! 👋</h2>
+            <h2>Selamat Datang, <?php echo htmlspecialchars($_SESSION['full_name']); ?>!</h2>
             <p>Berikut adalah ringkasan sistem apotek online Anda.</p>
         </div>
         
         <div class="stats-grid">
             <div class="stat-card blue">
-                <div class="stat-icon">👥</div>
+                <div class="stat-icon"></div>
                 <div class="stat-label">Total Pengguna</div>
                 <div class="stat-value"><?php echo $total_users; ?></div>
             </div>
             
             <div class="stat-card green">
-                <div class="stat-icon">💊</div>
+                <div class="stat-icon"></div>
                 <div class="stat-label">Total Obat</div>
                 <div class="stat-value"><?php echo $total_medicines; ?></div>
             </div>
             
             <div class="stat-card orange">
-                <div class="stat-icon">📦</div>
+                <div class="stat-icon"></div>
                 <div class="stat-label">Total Pesanan</div>
                 <div class="stat-value"><?php echo $total_orders; ?></div>
             </div>
             
             <div class="stat-card purple">
-                <div class="stat-icon">💰</div>
+                <div class="stat-icon"></div>
                 <div class="stat-label">Total Pendapatan</div>
                 <div class="stat-value">Rp <?php echo number_format($total_revenue, 0, ',', '.'); ?></div>
             </div>
         </div>
         
         <div class="recent-orders">
-            <h3>📋 Pesanan Terbaru</h3>
+            <h3>Pesanan Terbaru</h3>
             
             <?php if (mysqli_num_rows($recent_orders) > 0): ?>
                 <table>
