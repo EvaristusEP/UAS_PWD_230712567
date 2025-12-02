@@ -75,218 +75,7 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Obat - Admin</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-        }
-        
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .navbar-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .navbar h1 {
-            color: white;
-            font-size: 24px;
-        }
-        
-        .navbar-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .navbar-links a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-        }
-        
-        .navbar-links a:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        
-        .alert {
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        
-        .alert-error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
-        }
-        
-        .alert-success {
-            background: #efe;
-            color: #3c3;
-            border: 1px solid #cfc;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-        
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group.full {
-            grid-column: 1 / -1;
-        }
-        
-        label {
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: 500;
-        }
-        
-        input, textarea, select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        
-        button {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        table th {
-            background: #f9f9f9;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #eee;
-        }
-        
-        table td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            color: #666;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-edit {
-            padding: 6px 12px;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 13px;
-        }
-        
-        .btn-delete {
-            padding: 6px 12px;
-            background: #dc3545;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 13px;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-        
-        .modal.active {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .close-modal {
-            font-size: 28px;
-            cursor: pointer;
-            color: #999;
-        }
-    </style>
+    <link rel="stylesheet" href="../../assets/css/admin.css">
 </head>
 <body>
     <?php include "../../layout/adminHeader.html" ?>
@@ -302,7 +91,7 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
         
         <!-- Form Tambah Obat -->
         <div class="card">
-            <h2>➕ Tambah Obat Baru</h2>
+            <h2>Tambah Obat Baru</h2>
             <form method="POST" action="" enctype="multipart/form-data">
                 <div class="form-grid">
                     <div class="form-group">
@@ -343,13 +132,13 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
 
                 </div>
                 
-                <button type="submit" name="add_medicine">💾 Tambah Obat</button>
+                <button type="submit" name="add_medicine">Tambah Obat</button>
             </form>
         </div>
         
         <!-- Daftar Obat -->
         <div class="card">
-            <h2>📋 Daftar Obat</h2>
+            <h2>Daftar Obat</h2>
             <table>
                 <thead>
                     <tr>
@@ -373,12 +162,12 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
                                 <div class="action-buttons">
                                     <a href="#" class="btn-edit" 
                                        onclick="openEditModal(<?php echo htmlspecialchars(json_encode($medicine)); ?>)">
-                                        ✏️ Edit
+                                        Edit
                                     </a>
                                     <a href="?delete=<?php echo $medicine['id']; ?>" 
                                        class="btn-delete"
                                        onclick="return confirm('Yakin hapus obat ini?')">
-                                        🗑️ Hapus
+                                        Hapus
                                     </a>
                                 </div>
                             </td>
@@ -393,7 +182,7 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
     <div id="editModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>✏️ Edit Obat</h2>
+                <h2>Edit Obat</h2>
                 <span class="close-modal" onclick="closeEditModal()">&times;</span>
             </div>
             
@@ -433,7 +222,7 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
                     </div>
                 </div>
                 
-                <button type="submit" name="edit_medicine">💾 Update Obat</button>
+                <button type="submit" name="edit_medicine">Update Obat</button>
             </form>
         </div>
     </div>

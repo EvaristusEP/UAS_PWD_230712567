@@ -177,196 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Saya - Apotek Online</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-        }
-        
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .navbar-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .navbar h1 {
-            color: white;
-            font-size: 24px;
-        }
-        
-        .navbar-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .navbar-links a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        
-        .navbar-links a:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        
-        .profile-grid {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-        }
-        
-        .profile-card {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .profile-image {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 0 auto 20px;
-            display: block;
-            border: 5px solid #667eea;
-        }
-        
-        .profile-card h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .profile-card p {
-            color: #666;
-            margin-bottom: 20px;
-        }
-        
-        .main-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #eee;
-        }
-        
-        .tab-button {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .tab-button.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: 500;
-        }
-        
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        button[type="submit"] {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        button[type="submit"]:hover {
-            transform: translateY(-2px);
-        }
-        
-        .alert {
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        
-        .alert-error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
-        }
-        
-        .alert-success {
-            background: #efe;
-            color: #3c3;
-            border: 1px solid #cfc;
-        }
-        
-        @media (max-width: 768px) {
-            .profile-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../../assets/css/user.css">
 </head>
 <body>
     <?php include "../../layout/userheader.php" ?>
@@ -390,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <img src="<?php echo $photo_path; ?>" alt="Foto Profil" class="profile-image">
                 <h3><?php echo htmlspecialchars($user['full_name']); ?></h3>
                 <p>@<?php echo htmlspecialchars($user['username']); ?></p>
-                <p>📧 <?php echo htmlspecialchars($user['email']); ?></p>
+                <p><?php echo htmlspecialchars($user['email']); ?></p>
             </div>
             
             <div class="main-content">
@@ -428,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <textarea id="address" name="address"><?php echo htmlspecialchars($user['address']); ?></textarea>
                         </div>
                         
-                        <button type="submit" name="update_profile">💾 Simpan Perubahan</button>
+                        <button type="submit" name="update_profile">Simpan Perubahan</button>
                     </form>
                 </div>
                 
@@ -441,7 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <input type="file" id="photo_profile" name="photo_profile" accept="image/*" required>
                         </div>
                         
-                        <button type="submit" name="update_photo">📸 Upload Foto</button>
+                        <button type="submit" name="update_photo">Upload Foto</button>
                     </form>
                 </div>
                 
@@ -464,13 +275,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <input type="password" id="confirm_password" name="confirm_password" required>
                         </div>
                         
-                        <button type="submit" name="update_password">🔐 Ubah Password</button>
+                        <button type="submit" name="update_password">Ubah Password</button>
                     </form>
                 </div>
                 
                 <!-- Tab Hapus Akun -->
                 <div id="delete" class="tab-content">
-                    <h2 style="color: #dc3545;">⚠️ Hapus Akun</h2>
+                    <h2 style="color: #dc3545;">Hapus Akun</h2>
                     
                     <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                         <h3 style="color: #856404; margin-bottom: 10px;">Peringatan!</h3>
@@ -483,7 +294,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <li>Foto profil Anda</li>
                         </ul>
                         <p style="color: #dc3545; font-weight: 600; margin-top: 15px;">
-                            ⚠️ Tindakan ini tidak dapat dibatalkan!
+                            Tindakan ini tidak dapat dibatalkan!
                         </p>
                     </div>
                     
@@ -503,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         
                         <button type="submit" name="delete_account" 
                                 style="background: #dc3545; width: 100%;">
-                            🗑️ Hapus Akun Saya
+                            Hapus Akun Saya
                         </button>
                     </form>
                 </div>
