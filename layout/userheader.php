@@ -7,9 +7,9 @@
                 <a href="index.php">Beranda</a>
                 <a href="cart.php">
                     Keranjang
-                    <?php if ($cart_items > 0): ?>
-                        <span class="cart-badge"><?php echo $cart_items; ?></span>
-                    <?php endif; ?>
+                    <span id="cart-count" class="cart-badge" style="<?php echo $cart_items > 0 ? '' : 'display:none;'; ?>">
+                        <?php echo $cart_items; ?>
+                    </span>
                 </a>
                 <a href="orders.php">Pesanan</a>
                 <a href="profile.php">Profil</a>

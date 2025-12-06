@@ -13,6 +13,7 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f5f5f5;
+    padding-top: 70px; /* Beri ruang untuk fixed navbar */
 }
 
 /* ============================================
@@ -22,6 +23,12 @@ body {
     background: #0d9488;
     padding: 15px 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
 }
 
 .navbar-content {

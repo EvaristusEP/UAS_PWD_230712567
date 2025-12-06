@@ -75,6 +75,7 @@ if (isset($_POST["register"])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrasi - Apotek Online</title>
     <link rel="stylesheet" href="assets/css/global.css">
+    <script src="assets/js/global.js"></script>
 </head>
 <body>
     <div class="container">
@@ -130,6 +131,6 @@ if (isset($_POST["register"])) {
         <div class="login-link">
             Sudah punya akun? <a href="login.php">Login di sini</a>
         </div>
-    </div> -->
+    </div>
 </body>
 </html>

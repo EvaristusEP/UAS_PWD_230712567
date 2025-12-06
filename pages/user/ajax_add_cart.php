@@ -5,39 +5,41 @@ include "../../database.php";
 $id = $_POST['id'];
 $qty = $_POST['qty'];
 
+// Ambil data obat dari database
 $med = $db->query("SELECT * FROM medicines WHERE id='$id'")->fetch_assoc();
 
 if (!$med) {
-    echo "ERROR";
+    echo json_encode(["status" => "ERROR"]);
     exit;
 }
 
+// Jika keranjang belum ada
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-// Jika barang sudah ada di keranjang
+// Jika barang sudah ada di keranjang → update qty
 if (isset($_SESSION['cart'][$id])) {
     $_SESSION['cart'][$id]['quantity'] += $qty;
 } else {
+    // Tambahkan data lengkap (termasuk kategori)
     $_SESSION['cart'][$id] = [
-        'id' => $id,
+        'id' => $med['id'],
         'name' => $med['name'],
         'price' => $med['price'],
-        'category' => $med['category'],
+        'category' => $med['category'],   // ← kategori ikut disimpan
         'quantity' => $qty
     ];
-
 }
 
-echo "OK";
-
-$total = 0;
-
-if (isset($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $item) {
-        $total += $item['quantity'];
-    }
+// Hitung total item
+$total_items = 0;
+foreach ($_SESSION['cart'] as $item) {
+    $total_items += $item['quantity'];
 }
 
-echo $total;
+// Kirim response JSON
+echo json_encode([
+    "status" => "OK",
+    "count" => $total_items
+]);

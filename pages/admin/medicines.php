@@ -13,6 +13,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
 $error = ''; // pesan error
 $success = ''; // pesan sukses
 
+// Ambil pesan dari session (setelah redirect)
+if (isset($_SESSION['success'])) {
+    $success = $_SESSION['success'];
+    unset($_SESSION['success']);
+}
+if (isset($_SESSION['error'])) {
+    $error = $_SESSION['error'];
+    unset($_SESSION['error']);
+}
+
 // Proses tambah obat baru (kalo admin klik tombol "Tambah Obat")
 if (isset($_POST['add_medicine'])) {
     // Ambil data dari form
@@ -31,7 +41,9 @@ if (isset($_POST['add_medicine'])) {
                  VALUES ('$name', '$description', '$price', '$stock', '$category')";
         
         if (mysqli_query($db, $query)) {
-            $success = "Obat berhasil ditambahkan!";
+            $_SESSION['success'] = "Obat berhasil ditambahkan!";
+            header('Location: medicines.php');
+            exit();
         } else {
             $error = "Gagal menambahkan obat: " . mysqli_error($db);
         }
@@ -55,7 +67,9 @@ if (isset($_POST['edit_medicine'])) {
              WHERE id='$id'";
     
     if (mysqli_query($db, $query)) {
-        $success = "Obat berhasil diupdate!";
+        $_SESSION['success'] = "Obat berhasil diupdate!";
+        header('Location: medicines.php');
+        exit();
     } else {
         $error = "Gagal update obat: " . mysqli_error($db);
     }
@@ -64,10 +78,23 @@ if (isset($_POST['edit_medicine'])) {
 // Proses hapus obat (kalo admin klik tombol hapus)
 if (isset($_GET['delete'])) {
     $id = ($_GET['delete']); // ID obat yang mau dihapus
+    
+    // Cek apakah obat sudah diorder
+    $check = mysqli_query($db, "SELECT COUNT(*) as count FROM order_details WHERE medicine_id='$id'");
+    $result = mysqli_fetch_assoc($check);
+    
+    if ($result['count'] > 0) {
+        $_SESSION['error'] = "Obat tidak bisa dihapus karena sudah ada dalam pesanan!";
+        header('Location: medicines.php');
+        exit();
+    }
+    
     $query = "DELETE FROM medicines WHERE id='$id'";
     
     if (mysqli_query($db, $query)) {
-        $success = "Obat berhasil dihapus!";
+        $_SESSION['success'] = "Obat berhasil dihapus!";
+        header('Location: medicines.php');
+        exit();
     } else {
         $error = "Gagal hapus obat: " . mysqli_error($db);
     }
@@ -89,14 +116,6 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
     <?php include "../../layout/adminHeader.html" ?>
     
     <div class="container">
-        <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo $error; ?></div>
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-            <div class="alert alert-success"><?php echo $success; ?></div>
-        <?php endif; ?>
-        
         <!-- Form Tambah Obat -->
         <div class="card">
             <h2>Tambah Obat Baru</h2>
@@ -172,11 +191,12 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
                                        onclick="openEditModal(<?php echo htmlspecialchars(json_encode($medicine)); ?>)">
                                         Edit
                                     </a>
-                                    <a href="?delete=<?php echo $medicine['id']; ?>" 
-                                       class="btn-delete"
-                                       onclick="return confirm('Yakin hapus obat ini?')">
+                                    <a href="javascript:void(0)" 
+                                        class="btn-delete"
+                                        onclick="confirmDelete(<?php echo $medicine['id']; ?>)">
                                         Hapus
                                     </a>
+
                                 </div>
                             </td>
                         </tr>
@@ -235,7 +255,21 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
         </div>
     </div>
     
+    <script src="../../assets/js/admin.js"></script>
     <script>
+        // Show toast notification if there's a message
+        <?php if ($success): ?>
+            <?php if (strpos($success, 'dihapus') !== false): ?>
+                showToast('<?php echo addslashes($success); ?>', 'delete');
+            <?php else: ?>
+                showToast('<?php echo addslashes($success); ?>', 'success');
+            <?php endif; ?>
+        <?php endif; ?>
+        
+        <?php if ($error): ?>
+            showToast('<?php echo addslashes($error); ?>', 'error');
+        <?php endif; ?>
+        
         function openEditModal(medicine) {
             document.getElementById('edit_id').value = medicine.id;
             document.getElementById('edit_name').value = medicine.name;

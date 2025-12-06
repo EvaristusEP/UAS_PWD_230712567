@@ -66,8 +66,6 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apotek Online - Beranda</title>
     <link rel="stylesheet" href="../../assets/css/user.css">
-    
-    <script src="../../assets/js/user.js"></script>
 </head>
 <body>
     <?php include "../../layout/userheader.php" ?>
@@ -147,5 +145,7 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
         <?php endif; ?>
     </div>
 
+    <script src="../../assets/js/global.js"></script>
+    <script src="../../assets/js/user.js"></script>
 </body>
 </html>

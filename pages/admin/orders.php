@@ -13,6 +13,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
 $success = ''; // pesan sukses
 $error = ''; // pesan error
 
+// Ambil pesan dari session (setelah redirect)
+if (isset($_SESSION['success'])) {
+    $success = $_SESSION['success'];
+    unset($_SESSION['success']);
+}
+if (isset($_SESSION['error'])) {
+    $error = $_SESSION['error'];
+    unset($_SESSION['error']);
+}
+
 // Proses update status pesanan (misal dari pending jadi completed)
 if (isset($_POST['update_status'])) {
     $order_id = ($_POST['order_id']); // ID pesanan yang mau diupdate
@@ -21,9 +31,13 @@ if (isset($_POST['update_status'])) {
     // Update status di database
     $query = "UPDATE orders SET status='$status' WHERE id='$order_id'";
     if (mysqli_query($db, $query)) {
-        $success = "Status pesanan berhasil diupdate!";
+        $_SESSION['success'] = "Status pesanan berhasil diupdate!";
+        header('Location: orders.php');
+        exit();
     } else {
-        $error = "Gagal update status: " . mysqli_error($db);
+        $_SESSION['error'] = "Gagal update status: " . mysqli_error($db);
+        header('Location: orders.php');
+        exit();
     }
 }
 
@@ -46,15 +60,7 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
 <body>
     <?php include "../../layout/adminHeader.html" ?>
     
-    <div class="container">
-        <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo $error; ?></div>
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-            <div class="alert alert-success"><?php echo $success; ?></div>
-        <?php endif; ?>
-        
+    <div class="container">        
         <div class="card">
             <h2>Daftar Pesanan</h2>
             <table>
@@ -112,7 +118,17 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
         </div>
     </div>
     
+    <script src="../../assets/js/admin.js"></script>
     <script>
+        // Show toast notification if there's a message
+        <?php if ($success): ?>
+            showToast('<?php echo addslashes($success); ?>', 'success');
+        <?php endif; ?>
+        
+        <?php if ($error): ?>
+            showToast('<?php echo addslashes($error); ?>', 'error');
+        <?php endif; ?>
+        
         function viewOrderDetail(orderId) {
             // Fetch order details via AJAX
             fetch('get_order_detail.php?id=' + orderId)

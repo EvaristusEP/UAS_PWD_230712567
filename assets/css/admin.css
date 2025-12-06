@@ -13,6 +13,7 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f5f5f5;
+    padding-top: 70px; /* Beri ruang untuk fixed navbar */
 }
 
 /* ============================================
@@ -22,6 +23,12 @@ body {
     background: #0d9488;
     padding: 15px 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
 }
 
 .navbar-content {
@@ -407,4 +414,116 @@ button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    background: #4caf50;
+    color: white;
+    border-radius: 8px;
+    opacity: 0;
+    transition: 0.4s;
+    z-index: 9999;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.toast.success {
+    background: #4caf50;
+}
+
+.toast.error {
+    background: #d9534f;
+}
+
+.toast.delete {
+    background: #d9534f;
+}
+
+.toast.show {
+    top: 80px;
+    opacity: 1;
+}
+
+.btn-delete {
+    background: #d9534f;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* ============================================
+   CONFIRM DELETE MODAL
+   ============================================ */
+.confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.confirm-box {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.confirm-box h3 {
+    color: #d9534f;
+    margin-bottom: 15px;
+    font-size: 22px;
+}
+
+.confirm-box p {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.confirm-actions button {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+}
+
+.confirm-actions .btn-delete {
+    background: #d9534f;
+    color: white;
+}
+
+.confirm-actions .btn-delete:hover {
+    background: #c9302c;
 }
