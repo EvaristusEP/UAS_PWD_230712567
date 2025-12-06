@@ -1,5 +1,5 @@
 <?php
-include "database.php";
+include '../config/database.php';
 session_start();
 
 $register_message = "";
@@ -7,21 +7,17 @@ $register_success = "";
 
 // Jika user sudah login
 if (isset($_SESSION["is_login"])) {
-    header("location: index.php");
+    header('location: ../index.php');
     exit;
-}
+    }
 
-// Jika form disubmit
-if (isset($_POST["register"])) {
-
-    $username = $_POST["username"];
+if (isset($_POST["register"])) {    $username = $_POST["username"];
     $email = $_POST["email"];
     $password = $_POST["password"];
     $confirm_password = $_POST["confirm_password"];
     $full_name = $_POST["full_name"];
     $address = $_POST["address"];
 
-    // Validasi input
     if (empty($username) || empty($email) || empty($password) || empty($full_name)) {
         $register_message = "Semua field wajib diisi!";
     } elseif ($password !== $confirm_password) {
@@ -30,9 +26,7 @@ if (isset($_POST["register"])) {
         $register_message = "Password minimal 8 karakter!";
     } else {
         try {
-            // Cek username sudah dipakai
             $check_username = $db->query("SELECT id FROM users WHERE username='$username'");
-            // Cek email sudah dipakai
             $check_email = $db->query("SELECT id FROM users WHERE email='$email'");
 
             if ($check_username->num_rows > 0) {
@@ -41,7 +35,6 @@ if (isset($_POST["register"])) {
                 $register_message = "Email sudah digunakan!";
             } else {
 
-                // Hash password
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
                 // Query insert
@@ -74,8 +67,8 @@ if (isset($_POST["register"])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrasi - Apotek Online</title>
-    <link rel="stylesheet" href="assets/css/global.css">
-    <script src="assets/js/global.js"></script>
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <script src="../assets/js/global.js"></script>
 </head>
 <body>
     <div class="container">

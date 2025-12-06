@@ -13,7 +13,7 @@
                 </a>
                 <a href="orders.php">Pesanan</a>
                 <a href="profile.php">Profil</a>
-                <a href="../../logout.php">Logout</a>
+                <a href="../auth/logout.php">Logout</a>
             </div>
         </div>
     </div>

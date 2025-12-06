@@ -1,19 +1,15 @@
 <?php
-// admin/orders.php - Manajemen Pesanan
-// Disini admin bisa liat semua pesanan dan ubah statusnya (pending, completed, dll)
+include '../config/database.php';
+session_start();
 
-include '../../database.php'; // koneksi database
-session_start(); // mulai session
-
-// Cek admin atau bukan
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
-    redirect('../login.php');
+    redirect('../auth/login.php');
 }
 
-$success = ''; // pesan sukses
-$error = ''; // pesan error
+$success = '';
+$error = '';
 
-// Ambil pesan dari session (setelah redirect)
+
 if (isset($_SESSION['success'])) {
     $success = $_SESSION['success'];
     unset($_SESSION['success']);
@@ -23,12 +19,12 @@ if (isset($_SESSION['error'])) {
     unset($_SESSION['error']);
 }
 
-// Proses update status pesanan (misal dari pending jadi completed)
+// Update status
 if (isset($_POST['update_status'])) {
-    $order_id = ($_POST['order_id']); // ID pesanan yang mau diupdate
-    $status = ($_POST['status']); // status baru (pending, completed, cancelled)
+    $order_id = ($_POST['order_id']); 
+    $status = ($_POST['status']); 
     
-    // Update status di database
+    
     $query = "UPDATE orders SET status='$status' WHERE id='$order_id'";
     if (mysqli_query($db, $query)) {
         $_SESSION['success'] = "Status pesanan berhasil diupdate!";
@@ -41,12 +37,12 @@ if (isset($_POST['update_status'])) {
     }
 }
 
-// Ambil semua pesanan dari database, join sama data user yang pesan
+
 $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
                                (SELECT COUNT(*) FROM order_details WHERE order_id = o.id) as total_items
                                FROM orders o 
                                JOIN users u ON o.user_id = u.id 
-                               ORDER BY o.order_date DESC"); // urutkan dari yang terbaru
+                               ORDER BY o.order_date DESC"); 
 ?>
 
 <!DOCTYPE html>
@@ -55,10 +51,10 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Pesanan - Admin</title>
-    <link rel="stylesheet" href="../../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
-    <?php include "../../layout/adminHeader.html" ?>
+    <?php include "../layout/adminHeader.html" ?>
     
     <div class="container">        
         <div class="card">
@@ -118,7 +114,7 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
         </div>
     </div>
     
-    <script src="../../assets/js/admin.js"></script>
+    <script src="../assets/js/admin.js"></script>
     <script>
         // Show toast notification if there's a message
         <?php if ($success): ?>
@@ -130,8 +126,7 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
         <?php endif; ?>
         
         function viewOrderDetail(orderId) {
-            // Fetch order details via AJAX
-            fetch('get_order_detail.php?id=' + orderId)
+            fetch('../api/get_order_detail.php?id=' + orderId)
                 .then(response => response.text())
                 .then(data => {
                     document.getElementById('orderDetails').innerHTML = data;

@@ -1,5 +1,5 @@
 <?php
-include "database.php";
+include "../config/database.php";
 
 $field = $_GET['field']; 
 $value = $_GET['value'];

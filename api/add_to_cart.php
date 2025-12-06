@@ -1,28 +1,35 @@
 <?php
 session_start();
-include "../../database.php";
+include "../config/database.php";
 
 $id = $_POST['id'];
 $qty = $_POST['qty'];
 
-// Ambil data obat dari database
 $med = $db->query("SELECT * FROM medicines WHERE id='$id'")->fetch_assoc();
 
 if (!$med) {
-    echo json_encode(["status" => "ERROR"]);
+    echo json_encode(["status" => "ERROR", "message" => "Obat tidak ditemukan"]);
     exit;
 }
 
-// Jika keranjang belum ada
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-// Jika barang sudah ada di keranjang → update qty
+$current_qty = isset($_SESSION['cart'][$id]) ? $_SESSION['cart'][$id]['quantity'] : 0;
+$new_total_qty = $current_qty + $qty;
+
+if ($new_total_qty > $med['stock']) {
+    echo json_encode([
+        "status" => "ERROR", 
+        "message" => "Stok tidak mencukupi! Stok tersedia: " . $med['stock']
+    ]);
+    exit;
+}
+
 if (isset($_SESSION['cart'][$id])) {
     $_SESSION['cart'][$id]['quantity'] += $qty;
 } else {
-    // Tambahkan data lengkap (termasuk kategori)
     $_SESSION['cart'][$id] = [
         'id' => $med['id'],
         'name' => $med['name'],

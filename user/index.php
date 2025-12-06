@@ -1,5 +1,22 @@
 <?php
-include 'config/database.php';
+include '../config/database.php';
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    redirect('../auth/login.php');
+}
+
+if ($_SESSION['role'] == 'admin') {
+    redirect('../admin/index.php');
+}
+
+// Hitung ada berapa item di keranjang (buat badge angka merah di icon keranjang)
+$cart_items = 0;
+if (isset($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $item) {
+        $cart_items += $item['quantity'];
+    }
+}
 
 $search = '';
 $category_filter = '';
@@ -12,8 +29,7 @@ if (isset($_GET['category'])) {
     $category_filter = ($_GET['category']);
 }
 
-// Query untuk mengambil obat
-$query = "SELECT * FROM medicines WHERE 1=1";
+$query = "SELECT * FROM medicines WHERE 1=1"; // 1=1 ini trick biar gampang nambah kondisi AND
 
 if (!empty($search)) {
     $query .= " AND (name LIKE '%$search%' OR description LIKE '%$search%')";
@@ -26,7 +42,6 @@ if (!empty($category_filter)) {
 $query .= " ORDER BY name ASC";
 $medicines = mysqli_query($db, $query);
 
-// Query untuk mengambil kategori
 $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER BY category");
 ?>
 
@@ -36,10 +51,10 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apotek Online - Beranda</title>
-    <link rel="stylesheet" href="../../assets/css/user.css">
+    <link rel="stylesheet" href="../assets/css/user.css">
 </head>
 <body>
-    <?php include "layout/indexHeader.html" ?>
+    <?php include "../layout/userheader.php" ?>
     
     <div class="container">
         <div class="welcome-banner">
@@ -93,14 +108,12 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
                                 </div>
                             </div>
                             <?php if ($medicine['stock'] > 0): ?>
-                                <form method="POST" action="auth/login.php" style="display: flex; gap: 10px; margin-top: 10px;">
-                                    <input type="hidden" name="medicine_id" value="<?php echo $medicine['id']; ?>">
-                                    <input type="number" name="quantity" value="1" min="1" max="<?php echo $medicine['stock']; ?>" 
-                                           style="width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
-                                    <button type="submit" name="add_to_cart" class="buy-button" style="flex: 1; margin: 0;">
-                                        Tambah ke Keranjang
-                                    </button>
+                                <form class="add-to-cart-form" method="POST">
+                                    <input type="hidden" name="medicine_id" value="<?= $medicine['id'] ?>">
+                                    <input type="number" name="quantity" value="1" min="1" max="<?= $medicine['stock'] ?>">
+                                    <button type="submit" class="buy-button">Tambah ke Keranjang</button>
                                 </form>
+
                             <?php else: ?>
                                 <button class="buy-button" style="background: #ccc; cursor: not-allowed;" disabled>
                                     Stok Habis
@@ -117,5 +130,8 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
             </div>
         <?php endif; ?>
     </div>
+
+    <script src="../assets/js/global.js"></script>
+    <script src="../assets/js/user.js"></script>
 </body>
 </html>

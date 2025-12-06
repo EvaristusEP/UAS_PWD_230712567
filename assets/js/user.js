@@ -7,7 +7,7 @@ document.addEventListener("submit", function (e) {
     const id = form.querySelector("input[name='medicine_id']").value;
     const qty = form.querySelector("input[name='quantity']").value;
 
-    fetch("ajax_add_cart.php", {
+    fetch("../api/add_to_cart.php", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `id=${id}&qty=${qty}`
@@ -16,18 +16,18 @@ document.addEventListener("submit", function (e) {
     .then(data => {
         if (data.status === "OK") {
 
-            // Update badge secara sederhana
             const badge = document.getElementById("cart-count");
             if (badge) badge.innerText = data.count;
 
-            // Pesan sederhana
-            alert("Berhasil ditambahkan ke keranjang");
+            showPopup("Berhasil ditambahkan ke keranjang", "success");
 
-            // Reset quantity
             form.querySelector("input[name='quantity']").value = 1;
         } else {
-            alert("Gagal menambah ke keranjang");
+            showPopup(data.message || "Gagal menambah ke keranjang", "error");
         }
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        console.error(err);
+        showPopup("Terjadi kesalahan", "error");
+    });
 });
