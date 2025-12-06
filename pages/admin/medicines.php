@@ -1,26 +1,32 @@
 <?php
-// admin/medicines.php - CRUD Obat
-include '../../database.php';
-session_start();
+// admin/medicines.php - CRUD Obat (Create, Read, Update, Delete)
+// Disini admin bisa tambah obat baru, edit obat, sama hapus obat
 
+include '../../database.php'; // koneksi database
+session_start(); // mulai session
+
+// Cek admin atau bukan? Kalo bukan, keluar!
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     redirect('../../login.php');
 }
 
-$error = '';
-$success = '';
+$error = ''; // pesan error
+$success = ''; // pesan sukses
 
-// Proses Tambah Obat
+// Proses tambah obat baru (kalo admin klik tombol "Tambah Obat")
 if (isset($_POST['add_medicine'])) {
+    // Ambil data dari form
     $name = ($_POST['name']);
     $description = ($_POST['description']);
     $price = ($_POST['price']);
     $stock = ($_POST['stock']);
     $category = ($_POST['category']);
     
+    // Validasi: field penting harus diisi
     if (empty($name) || empty($price) || empty($stock)) {
         $error = "Nama, harga, dan stok wajib diisi!";
     } else {
+        // Insert obat baru ke database
         $query = "INSERT INTO medicines (name, description, price, stock, category) 
                  VALUES ('$name', '$description', '$price', '$stock', '$category')";
         
@@ -32,8 +38,9 @@ if (isset($_POST['add_medicine'])) {
     }
 }
 
-// Proses Edit Obat
+// Proses edit obat (kalo admin edit data obat yang udah ada)
 if (isset($_POST['edit_medicine'])) {
+    // Ambil data dari form edit
     $id = ($_POST['id']);
     $name = ($_POST['name']);
     $description = ($_POST['description']);
@@ -41,6 +48,7 @@ if (isset($_POST['edit_medicine'])) {
     $stock = ($_POST['stock']);
     $category = ($_POST['category']);
     
+    // Update data obat di database
     $query = "UPDATE medicines SET 
              name='$name', description='$description', price='$price', 
              stock='$stock', category='$category' 
@@ -53,9 +61,9 @@ if (isset($_POST['edit_medicine'])) {
     }
 }
 
-// Proses Hapus Obat
+// Proses hapus obat (kalo admin klik tombol hapus)
 if (isset($_GET['delete'])) {
-    $id = ($_GET['delete']);
+    $id = ($_GET['delete']); // ID obat yang mau dihapus
     $query = "DELETE FROM medicines WHERE id='$id'";
     
     if (mysqli_query($db, $query)) {
@@ -65,7 +73,7 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// Ambil semua obat
+// Ambil semua data obat dari database buat ditampilin di tabel
 $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
 ?>
 

@@ -1,61 +1,34 @@
-
-
 <?php
 // index.php - Halaman utama untuk user (daftar obat)
-// Ini halaman pertama yang diliat user setelah login, isinya daftar obat yang bisa dibeli
+include 'database.php';
 
-include '../../database.php'; // koneksi ke database
-session_start(); // mulai session
+// Ambil data obat dari database
+$search = '';
+$category_filter = '';
 
-// Cek dulu, user udah login belum? Kalo belum, suruh login dulu
-if (!isset($_SESSION['user_id'])) {
-    redirect('login.php');
-}
-
-// Kalo yang login ternyata admin, redirect ke dashboard admin
-if ($_SESSION['role'] == 'admin') {
-    redirect('admin/index.php');
-}
-
-// Hitung ada berapa item di keranjang (buat badge angka merah di icon keranjang)
-$cart_items = 0;
-if (isset($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $item) {
-        $cart_items += $item['quantity'];
-    }
-}
-
-// Ambil data obat dari database (dengan filter search & kategori kalo ada)
-$search = ''; // buat nyimpen keyword pencarian
-$category_filter = ''; // buat nyimpen kategori yang dipilih
-
-// Kalo user ngetik sesuatu di search box
 if (isset($_GET['search'])) {
     $search = ($_GET['search']);
 }
 
-// Kalo user milih kategori tertentu
 if (isset($_GET['category'])) {
     $category_filter = ($_GET['category']);
 }
 
-// Bikin query SQL buat ambil data obat
-$query = "SELECT * FROM medicines WHERE 1=1"; // 1=1 ini trick biar gampang nambah kondisi AND
+// Query untuk mengambil obat
+$query = "SELECT * FROM medicines WHERE 1=1";
 
-// Kalo ada keyword search, tambah kondisi WHERE
 if (!empty($search)) {
-    $query .= " AND (name LIKE '%$search%' OR description LIKE '%$search%')"; // cari di nama atau deskripsi
+    $query .= " AND (name LIKE '%$search%' OR description LIKE '%$search%')";
 }
 
-// Kalo ada filter kategori, tambah kondisi WHERE lagi
 if (!empty($category_filter)) {
     $query .= " AND category='$category_filter'";
 }
 
-$query .= " ORDER BY name ASC"; // urutkan berdasarkan nama A-Z
-$medicines = mysqli_query($db, $query); // jalankan querynya
+$query .= " ORDER BY name ASC";
+$medicines = mysqli_query($db, $query);
 
-// Ambil semua kategori yang ada buat dropdown filter
+// Query untuk mengambil kategori
 $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER BY category");
 ?>
 
@@ -66,11 +39,9 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apotek Online - Beranda</title>
     <link rel="stylesheet" href="../../assets/css/user.css">
-    
-    <script src="../../assets/js/user.js"></script>
 </head>
 <body>
-    <?php include "../../layout/userheader.php" ?>
+    <?php include "layout/indexHeader.html" ?>
     
     <div class="container">
         <div class="welcome-banner">
@@ -124,12 +95,14 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
                                 </div>
                             </div>
                             <?php if ($medicine['stock'] > 0): ?>
-                                <form class="add-to-cart-form" method="POST">
-                                    <input type="hidden" name="medicine_id" value="<?= $medicine['id'] ?>">
-                                    <input type="number" name="quantity" value="1" min="1" max="<?= $medicine['stock'] ?>">
-                                    <button type="submit" class="buy-button">Tambah ke Keranjang</button>
+                                <form method="POST" action="login.php" style="display: flex; gap: 10px; margin-top: 10px;">
+                                    <input type="hidden" name="medicine_id" value="<?php echo $medicine['id']; ?>">
+                                    <input type="number" name="quantity" value="1" min="1" max="<?php echo $medicine['stock']; ?>" 
+                                           style="width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                                    <button type="submit" name="add_to_cart" class="buy-button" style="flex: 1; margin: 0;">
+                                        Tambah ke Keranjang
+                                    </button>
                                 </form>
-
                             <?php else: ?>
                                 <button class="buy-button" style="background: #ccc; cursor: not-allowed;" disabled>
                                     Stok Habis
@@ -146,6 +119,5 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
             </div>
         <?php endif; ?>
     </div>
-
 </body>
 </html>

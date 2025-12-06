@@ -1,13 +1,16 @@
 <?php
 // orders.php - Halaman daftar pesanan user
-include '../../database.php';
-session_start();
+// Disini user bisa liat riwayat pesanan yang pernah dibuat
 
+include '../../database.php'; // koneksi database
+session_start(); // mulai session
+
+// Cek udah login belum
 if (!isset($_SESSION['user_id'])) {
     redirect('../../login.php');
 }
 
-// Hitung item di keranjang
+// Hitung item di keranjang (buat badge di navbar)
 $cart_items = 0;
 if (isset($_SESSION['cart'])) {
     foreach ($_SESSION['cart'] as $item) {
@@ -17,12 +20,12 @@ if (isset($_SESSION['cart'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Ambil semua pesanan user
+// Ambil semua pesanan milik user ini dari database
 $query = "SELECT o.*, 
           (SELECT COUNT(*) FROM order_details WHERE order_id = o.id) as total_items
           FROM orders o 
           WHERE o.user_id = '$user_id' 
-          ORDER BY o.order_date DESC";
+          ORDER BY o.order_date DESC"; // urutkan dari yang terbaru
 $orders = mysqli_query($db, $query);
 ?>
 
@@ -33,6 +36,9 @@ $orders = mysqli_query($db, $query);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesanan Saya - Apotek Online</title>
     <link rel="stylesheet" href="../../assets/css/user.css">
+
+     <script src="../../assets/js/global.js"></script>
+    <script src="../../assets/js/user.js"></script>
 </head>
 <body>
     <?php include "../../layout/userheader.php" ?>

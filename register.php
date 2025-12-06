@@ -75,7 +75,6 @@ if (isset($_POST["register"])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrasi - Apotek Online</title>
     <link rel="stylesheet" href="assets/css/global.css">
-    
 </head>
 <body>
     <div class="container">
@@ -92,14 +91,16 @@ if (isset($_POST["register"])) {
         <form method="POST" action="">
             <div class="form-group">
                 <label for="username">Username *</label>
-                <input type="text" id="username" name="username" required 
-                       value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
+                <input type="text" id="username" name="username" 
+                       onkeyup="checkAvailability('username', this.value, 'username_status')">
+                <small id="username_status"></small>
             </div>
             
             <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" name="email" required 
-                       value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+                <input type="email" id="email" name="email" 
+                       onkeyup="checkAvailability('email', this.value, 'email_status')">
+                <small id="email_status"></small>
             </div>
             
             <div class="form-group">
@@ -129,6 +130,6 @@ if (isset($_POST["register"])) {
         <div class="login-link">
             Sudah punya akun? <a href="login.php">Login di sini</a>
         </div>
-    </div>
+    </div> -->
 </body>
 </html>

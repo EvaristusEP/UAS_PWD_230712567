@@ -1,35 +1,41 @@
 <?php
 // cart.php - Halaman keranjang belanja
-include '../../database.php';
-session_start();
+// Ini halaman buat ngeliat isi keranjang, update jumlah obat, sama checkout
 
+include '../../database.php'; // koneksi database
+session_start(); // mulai session buat nyimpen data user
+
+// Cek dulu nih, udah login belum? Kalo belum, suruh login dulu
 if (!isset($_SESSION['user_id'])) {
     redirect('../../login.php');
 }
 
-$user_id = $_SESSION['user_id'];
-$error = '';
-$success = '';
+$user_id = $_SESSION['user_id']; // ambil ID user yang login
+$error = ''; // variabel buat nyimpen pesan error
+$success = ''; // variabel buat nyimpen pesan sukses
 
-// Inisialisasi keranjang jika belum ada
+// Kalo keranjangnya belum ada, bikin dulu array kosong
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-// Proses tambah ke keranjang
+// Proses tambah obat ke keranjang (kalo user klik tombol "Tambah ke Keranjang")
 if (isset($_POST['add_to_cart'])) {
-    $medicine_id = ($_POST['medicine_id']);
-    $quantity = ($_POST['quantity']);
+    $medicine_id = ($_POST['medicine_id']); // ID obat yang mau ditambah
+    $quantity = ($_POST['quantity']); // jumlah yang mau dibeli
     
-    // Cek stok obat
+    // Cek dulu stoknya cukup apa nggak
     $check_query = "SELECT * FROM medicines WHERE id='$medicine_id'";
     $medicine = mysqli_fetch_assoc(mysqli_query($db, $check_query));
     
+    // Kalo stok cukup, lanjut tambah ke keranjang
     if ($medicine && $quantity <= $medicine['stock']) {
-        // Cek apakah obat sudah ada di keranjang
+        // Cek nih, obat ini udah pernah ditambah sebelumnya belum?
         if (isset($_SESSION['cart'][$medicine_id])) {
+            // Kalo udah ada, tinggal tambah jumlahnya aja
             $_SESSION['cart'][$medicine_id]['quantity'] += $quantity;
         } else {
+            // Kalo belum ada, tambahin data obat baru ke keranjang
             $_SESSION['cart'][$medicine_id] = [
                 'name' => $medicine['name'],
                 'price' => $medicine['price'],
@@ -39,61 +45,64 @@ if (isset($_POST['add_to_cart'])) {
         }
         $success = "Obat berhasil ditambahkan ke keranjang!";
     } else {
-        $error = "Stok tidak mencukupi!";
+        $error = "Stok tidak mencukupi!"; // waduh stoknya kurang
     }
 }
 
-// Proses update quantity
+// Proses update jumlah obat (kalo user ganti angkanya terus klik tombol centang)
 if (isset($_POST['update_cart'])) {
-    $medicine_id = ($_POST['medicine_id']);
-    $quantity = ($_POST['quantity']);
+    $medicine_id = ($_POST['medicine_id']); // ID obat yang mau diupdate
+    $quantity = ($_POST['quantity']); // jumlah baru
     
     if ($quantity > 0) {
-        // Cek stok
+        // Kalo jumlahnya lebih dari 0, cek dulu stoknya cukup apa nggak
         $check_query = "SELECT stock FROM medicines WHERE id='$medicine_id'";
         $result = mysqli_query($db, $check_query);
         $medicine = mysqli_fetch_assoc($result);
         
         if ($medicine && $quantity <= $medicine['stock']) {
+            // Update jumlahnya kalo stok cukup
             $_SESSION['cart'][$medicine_id]['quantity'] = $quantity;
             $success = "Keranjang berhasil diupdate!";
         } else {
-            $error = "Stok tidak mencukupi!";
+            $error = "Stok tidak mencukupi!"; // stok kurang bro
         }
     } else {
+        // Kalo jumlahnya 0 atau kurang, hapus aja item ini dari keranjang
         unset($_SESSION['cart'][$medicine_id]);
         $success = "Item dihapus dari keranjang!";
     }
 }
 
-// Proses hapus item
+// Proses hapus item (kalo user klik tombol X di sebelah kanan)
 if (isset($_GET['remove'])) {
-    $medicine_id = ($_GET['remove']);
-    unset($_SESSION['cart'][$medicine_id]);
+    $medicine_id = ($_GET['remove']); // ID obat yang mau dihapus
+    unset($_SESSION['cart'][$medicine_id]); // hapus dari session
     $success = "Item berhasil dihapus dari keranjang!";
 }
 
-// Proses checkout
+// Proses checkout (ini yang paling penting nih, buat nyimpen pesanan ke database)
 if (isset($_POST['checkout'])) {
+    // Cek dulu, keranjangnya ada isinya apa nggak
     if (empty($_SESSION['cart'])) {
-        $error = "Keranjang belanja kosong!";
+        $error = "Keranjang belanja kosong!"; // waduh kosong
     } else {
-        $payment_method = ($_POST['payment_method']);
+        $payment_method = ($_POST['payment_method']); // metode pembayaran yang dipilih
         
         if (empty($payment_method)) {
-            $error = "Pilih metode pembayaran!";
+            $error = "Pilih metode pembayaran!"; // lupa pilih metode bayar nih
         } else {
-            // Hitung total
+            // Hitung total harga semua item di keranjang
             $total_price = 0;
             foreach ($_SESSION['cart'] as $item) {
                 $total_price += $item['price'] * $item['quantity'];
             }
             
-            // Mulai transaksi
+            // Mulai transaksi database (biar kalo ada error, bisa di-rollback)
             mysqli_begin_transaction($db);
             
             try {
-                // Insert ke tabel orders
+                // Step 1: Bikin pesanan baru di tabel orders (ini kayak nota pembelian)
                 $order_query = "INSERT INTO orders (user_id, order_date, total_price, payment_method, status) 
                                VALUES ('$user_id', NOW(), '$total_price', '$payment_method', 'completed')";
                 
@@ -101,11 +110,12 @@ if (isset($_POST['checkout'])) {
                     throw new Exception("Error insert order: " . mysqli_error($db));
                 }
                 
+                // Ambil ID pesanan yang baru aja dibuat (buat relasi ke order_details)
                 $order_id = mysqli_insert_id($db);
                 
-                // Insert setiap item ke order_details dan update stok
+                // Step 2: Masukin detail setiap obat yang dibeli ke tabel order_details
                 foreach ($_SESSION['cart'] as $medicine_id => $item) {
-                    // Insert detail
+                    // Insert detail pembelian (obat apa, berapa banyak, harga berapa)
                     $detail_query = "INSERT INTO order_details (order_id, medicine_id, quantity, price_at_purchase) 
                                     VALUES ('$order_id', '$medicine_id', '{$item['quantity']}', '{$item['price']}')";
                     
@@ -113,7 +123,7 @@ if (isset($_POST['checkout'])) {
                         throw new Exception("Error insert order detail: " . mysqli_error($db));
                     }
                     
-                    // Update stok
+                    // Step 3: Kurangin stok obat di database (biar stoknya berkurang sesuai yang dibeli)
                     $update_stock = "UPDATE medicines SET stock = stock - {$item['quantity']} WHERE id='$medicine_id'";
                     
                     if (!mysqli_query($db, $update_stock)) {
@@ -121,16 +131,17 @@ if (isset($_POST['checkout'])) {
                     }
                 }
                 
-                // Commit transaksi
+                // Kalo semua berhasil, commit transaksi (simpan semua perubahan ke database)
                 mysqli_commit($db);
                 
-                // Kosongkan keranjang
+                // Kosongin keranjang karena udah checkout
                 $_SESSION['cart'] = [];
                 
                 $success = "Pesanan berhasil dibuat! Terima kasih telah berbelanja.";
-                header("refresh:2;url=orders.php");
+                header("refresh:2;url=orders.php"); // redirect ke halaman pesanan setelah 2 detik
                 
             } catch (Exception $e) {
+                // Kalo ada error, rollback semua perubahan (balik seperti semula)
                 mysqli_rollback($db);
                 $error = $e->getMessage();
             }
@@ -138,12 +149,12 @@ if (isset($_POST['checkout'])) {
     }
 }
 
-// Hitung total keranjang
-$cart_total = 0;
-$cart_items = 0;
+// Hitung total harga dan jumlah item di keranjang (buat ditampilin di ringkasan)
+$cart_total = 0; // total harga
+$cart_items = 0; // total item
 foreach ($_SESSION['cart'] as $item) {
-    $cart_total += $item['price'] * $item['quantity'];
-    $cart_items += $item['quantity'];
+    $cart_total += $item['price'] * $item['quantity']; // harga x jumlah
+    $cart_items += $item['quantity']; // tambah jumlah item
 }
 ?>
 
@@ -154,6 +165,9 @@ foreach ($_SESSION['cart'] as $item) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keranjang Belanja - Apotek Online</title>
     <link rel="stylesheet" href="../../assets/css/user.css">
+
+    <script src="../../assets/js/global.js"></script>
+    <script src="../../assets/js/user.js"></script>
 </head>
 <body>
     <?php include "../../layout/userheader.php" ?>

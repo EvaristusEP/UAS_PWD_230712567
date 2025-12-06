@@ -51,6 +51,9 @@ if (isset($_SESSION['cart'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Pesanan #<?php echo $order_id; ?> - Apotek Online</title>
     <link rel="stylesheet" href="../../assets/css/user.css">
+
+     <script src="../../assets/js/global.js"></script>
+    <script src="../../assets/js/user.js"></script>
 </head>
 <body>
     <?php include "../../layout/userheader.php" ?>

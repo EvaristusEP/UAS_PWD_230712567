@@ -1,21 +1,23 @@
 <?php
 // admin/index.php - Dashboard admin
-include '../../database.php';
+// Ini halaman utama admin, isinya statistik dan ringkasan sistem
 
-session_start();
+include '../../database.php'; // koneksi database
 
-// Cek apakah user sudah login dan role admin
+session_start(); // mulai session
+
+// Cek dulu, yang login admin apa bukan? Kalo bukan admin, gak boleh masuk!
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     redirect('../login.php');
 }
 
-// Statistik
-$total_users = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as total FROM users WHERE role='user'"))['total'];
-$total_medicines = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as total FROM medicines"))['total'];
-$total_orders = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as total FROM orders"))['total'];
-$total_revenue = mysqli_fetch_assoc(mysqli_query($db, "SELECT SUM(total_price) as total FROM orders WHERE status='completed'"))['total'] ?? 0;
+// Ambil statistik buat ditampilin di card-card
+$total_users = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as total FROM users WHERE role='user'"))['total']; // jumlah user biasa (bukan admin)
+$total_medicines = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as total FROM medicines"))['total']; // jumlah obat
+$total_orders = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as total FROM orders"))['total']; // jumlah pesanan
+$total_revenue = mysqli_fetch_assoc(mysqli_query($db, "SELECT SUM(total_price) as total FROM orders WHERE status='completed'"))['total'] ?? 0; // total pendapatan (cuma yang udah completed)
 
-// Pesanan terbaru
+// Ambil 5 pesanan terbaru buat ditampilin di tabel
 $recent_orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name 
                                       FROM orders o 
                                       JOIN users u ON o.user_id = u.id 

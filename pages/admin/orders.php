@@ -1,20 +1,24 @@
 <?php
 // admin/orders.php - Manajemen Pesanan
-include '../../database.php';
-session_start();
+// Disini admin bisa liat semua pesanan dan ubah statusnya (pending, completed, dll)
 
+include '../../database.php'; // koneksi database
+session_start(); // mulai session
+
+// Cek admin atau bukan
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     redirect('../login.php');
 }
 
-$success = '';
-$error = '';
+$success = ''; // pesan sukses
+$error = ''; // pesan error
 
-// Update status pesanan
+// Proses update status pesanan (misal dari pending jadi completed)
 if (isset($_POST['update_status'])) {
-    $order_id = ($_POST['order_id']);
-    $status = ($_POST['status']);
+    $order_id = ($_POST['order_id']); // ID pesanan yang mau diupdate
+    $status = ($_POST['status']); // status baru (pending, completed, cancelled)
     
+    // Update status di database
     $query = "UPDATE orders SET status='$status' WHERE id='$order_id'";
     if (mysqli_query($db, $query)) {
         $success = "Status pesanan berhasil diupdate!";
@@ -23,12 +27,12 @@ if (isset($_POST['update_status'])) {
     }
 }
 
-// Ambil semua pesanan dengan informasi user
+// Ambil semua pesanan dari database, join sama data user yang pesan
 $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
                                (SELECT COUNT(*) FROM order_details WHERE order_id = o.id) as total_items
                                FROM orders o 
                                JOIN users u ON o.user_id = u.id 
-                               ORDER BY o.order_date DESC");
+                               ORDER BY o.order_date DESC"); // urutkan dari yang terbaru
 ?>
 
 <!DOCTYPE html>

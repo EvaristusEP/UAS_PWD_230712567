@@ -1,14 +1,16 @@
 <?php
 // profile.php - Halaman profil dan update profil
-include '../../database.php';
-session_start();
+// Disini user bisa liat dan edit profil, ganti password, upload foto, bahkan hapus akun
+
+include '../../database.php'; // koneksi database
+session_start(); // mulai session
 
 // Cek apakah user sudah login
 if (!isset($_SESSION['user_id'])) {
     redirect('login.php');
 }
 
-// Hitung item di keranjang
+// Hitung item di keranjang (buat badge)
 $cart_items = 0;
 if (isset($_SESSION['cart'])) {
     foreach ($_SESSION['cart'] as $item) {
@@ -17,33 +19,35 @@ if (isset($_SESSION['cart'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$error = '';
-$success = '';
+$error = ''; // pesan error
+$success = ''; // pesan sukses
 
 // Ambil data user dari database
 $query = "SELECT * FROM users WHERE id='$user_id'";
 $result = mysqli_query($db, $query);
 $user = mysqli_fetch_assoc($result);
 
-// Proses update profil
+// Proses update profil (kalo user klik tombol "Update Profil")
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['update_profile'])) {
+        // Ambil data dari form
         $full_name = ($_POST['full_name']);
         $email = ($_POST['email']);
         $address = ($_POST['address']);
         
-        // Cek apakah email sudah digunakan user lain
+        // Cek apakah email ini udah dipake user lain (selain user ini sendiri)
         $check_email = mysqli_query($db, "SELECT id FROM users WHERE email='$email' AND id != '$user_id'");
         
         if (mysqli_num_rows($check_email) > 0) {
-            $error = "Email sudah digunakan oleh user lain!";
+            $error = "Email sudah digunakan oleh user lain!"; // email udah ada
         } else {
+            // Update data profil di database
             $update_query = "UPDATE users SET full_name='$full_name', email='$email', address='$address' WHERE id='$user_id'";
             
             if (mysqli_query($db, $update_query)) {
                 $success = "Profil berhasil diupdate!";
-                $_SESSION['full_name'] = $full_name;
-                // Refresh data user
+                $_SESSION['full_name'] = $full_name; // update session juga
+                // Refresh data user dari database
                 $result = mysqli_query($db, "SELECT * FROM users WHERE id='$user_id'");
                 $user = mysqli_fetch_assoc($result);
             } else {
@@ -76,22 +80,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 // Upload file
                 if (move_uploaded_file($_FILES['photo_profile']['tmp_name'], $upload_path)) {
-                    // Hapus foto lama jika bukan default
-                    if ($user['photo_profile'] != 'default.jpg' && file_exists('uploads/profiles/' . $user['photo_profile'])) {
-                        unlink('uploads/profiles/' . $user['photo_profile']);
+
+                    // Path file lama
+                    $old_file = 'uploads/profiles/' . $user['photo_profile'];
+
+                    // Hapus foto lama jika valid
+                    if (
+                        !empty($user['photo_profile']) &&           // tidak kosong
+                        $user['photo_profile'] != 'default.jpg' &&  // bukan default
+                        file_exists($old_file) &&                   // file benar ada
+                        is_file($old_file)                          // benar-benar file
+                    ) {
+                        unlink($old_file);
                     }
-                    
+
                     // Update database
                     $update_photo = "UPDATE users SET photo_profile='$new_filename' WHERE id='$user_id'";
                     if (mysqli_query($db, $update_photo)) {
                         $success = "Foto profil berhasil diupdate!";
+                        
                         // Refresh data user
                         $result = mysqli_query($db, "SELECT * FROM users WHERE id='$user_id'");
                         $user = mysqli_fetch_assoc($result);
                     }
+
                 } else {
                     $error = "Upload file gagal!";
                 }
+
             }
         } else {
             $error = "Pilih file terlebih dahulu!";
@@ -178,6 +194,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Saya - Apotek Online</title>
     <link rel="stylesheet" href="../../assets/css/user.css">
+
+     <script src="../../assets/js/global.js"></script>
+    <script src="../../assets/js/user.js"></script>
 </head>
 <body>
     <?php include "../../layout/userheader.php" ?>
