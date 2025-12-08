@@ -1,32 +1,27 @@
 <?php
-// cart.php - Halaman keranjang belanja
-include '../../database.php';
+include '../config/database.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    redirect('../../login.php');
+    redirect('../auth/login.php');
 }
 
 $user_id = $_SESSION['user_id'];
 $error = '';
 $success = '';
 
-// Inisialisasi keranjang jika belum ada
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-// Proses tambah ke keranjang
 if (isset($_POST['add_to_cart'])) {
     $medicine_id = ($_POST['medicine_id']);
     $quantity = ($_POST['quantity']);
     
-    // Cek stok obat
     $check_query = "SELECT * FROM medicines WHERE id='$medicine_id'";
     $medicine = mysqli_fetch_assoc(mysqli_query($db, $check_query));
     
     if ($medicine && $quantity <= $medicine['stock']) {
-        // Cek apakah obat sudah ada di keranjang
         if (isset($_SESSION['cart'][$medicine_id])) {
             $_SESSION['cart'][$medicine_id]['quantity'] += $quantity;
         } else {
@@ -43,13 +38,11 @@ if (isset($_POST['add_to_cart'])) {
     }
 }
 
-// Proses update quantity
 if (isset($_POST['update_cart'])) {
     $medicine_id = ($_POST['medicine_id']);
     $quantity = ($_POST['quantity']);
     
     if ($quantity > 0) {
-        // Cek stok
         $check_query = "SELECT stock FROM medicines WHERE id='$medicine_id'";
         $result = mysqli_query($db, $check_query);
         $medicine = mysqli_fetch_assoc($result);
@@ -66,14 +59,12 @@ if (isset($_POST['update_cart'])) {
     }
 }
 
-// Proses hapus item
 if (isset($_GET['remove'])) {
     $medicine_id = ($_GET['remove']);
     unset($_SESSION['cart'][$medicine_id]);
     $success = "Item berhasil dihapus dari keranjang!";
 }
 
-// Proses checkout
 if (isset($_POST['checkout'])) {
     if (empty($_SESSION['cart'])) {
         $error = "Keranjang belanja kosong!";
@@ -83,67 +74,79 @@ if (isset($_POST['checkout'])) {
         if (empty($payment_method)) {
             $error = "Pilih metode pembayaran!";
         } else {
-            // Hitung total
             $total_price = 0;
-            foreach ($_SESSION['cart'] as $item) {
+            $stock_errors = [];
+            
+            foreach ($_SESSION['cart'] as $medicine_id => $item) {
+                $check_stock = mysqli_query($db, "SELECT stock, name FROM medicines WHERE id='$medicine_id'");
+                $med = mysqli_fetch_assoc($check_stock);
+                
+                if (!$med || $item['quantity'] > $med['stock']) {
+                    $stock_errors[] = $med['name'] . " (stok: " . ($med['stock'] ?? 0) . ")";
+                }
+                
                 $total_price += $item['price'] * $item['quantity'];
             }
             
-            // Mulai transaksi
-            mysqli_begin_transaction($db);
-            
-            try {
-                // Insert ke tabel orders
-                $order_query = "INSERT INTO orders (user_id, order_date, total_price, payment_method, status) 
-                               VALUES ('$user_id', NOW(), '$total_price', '$payment_method', 'completed')";
+            if (!empty($stock_errors)) {
+                $error = "Stok tidak mencukupi untuk: " . implode(", ", $stock_errors);
+            } else {
+                mysqli_begin_transaction($db);
                 
-                if (!mysqli_query($db, $order_query)) {
-                    throw new Exception("Error insert order: " . mysqli_error($db));
-                }
-                
-                $order_id = mysqli_insert_id($db);
-                
-                // Insert setiap item ke order_details dan update stok
-                foreach ($_SESSION['cart'] as $medicine_id => $item) {
-                    // Insert detail
-                    $detail_query = "INSERT INTO order_details (order_id, medicine_id, quantity, price_at_purchase) 
-                                    VALUES ('$order_id', '$medicine_id', '{$item['quantity']}', '{$item['price']}')";
+                try {
+                    $order_query = "INSERT INTO orders (user_id, order_date, total_price, payment_method, status) 
+                                   VALUES ('$user_id', NOW(), '$total_price', '$payment_method', 'completed')";
                     
-                    if (!mysqli_query($db, $detail_query)) {
-                        throw new Exception("Error insert order detail: " . mysqli_error($db));
+                    if (!mysqli_query($db, $order_query)) {
+                        throw new Exception("Error insert order: " . mysqli_error($db));
                     }
                     
-                    // Update stok
-                    $update_stock = "UPDATE medicines SET stock = stock - {$item['quantity']} WHERE id='$medicine_id'";
+                    $order_id = mysqli_insert_id($db);
                     
-                    if (!mysqli_query($db, $update_stock)) {
-                        throw new Exception("Error update stock: " . mysqli_error($db));
+                    foreach ($_SESSION['cart'] as $medicine_id => $item) {
+                        $check_final = mysqli_query($db, "SELECT stock FROM medicines WHERE id='$medicine_id'");
+                        $current = mysqli_fetch_assoc($check_final);
+                        
+                        if ($current['stock'] < $item['quantity']) {
+                            throw new Exception("Stok {$item['name']} tidak mencukupi!");
+                        }
+                        
+                        $detail_query = "INSERT INTO order_details (order_id, medicine_id, quantity, price_at_purchase) 
+                                        VALUES ('$order_id', '$medicine_id', '{$item['quantity']}', '{$item['price']}')";
+                        
+                        if (!mysqli_query($db, $detail_query)) {
+                            throw new Exception("Error insert order detail: " . mysqli_error($db));
+                        }
+                        
+                        $update_stock = "UPDATE medicines SET stock = stock - {$item['quantity']} WHERE id='$medicine_id'";
+                        
+                        if (!mysqli_query($db, $update_stock)) {
+                            throw new Exception("Error update stock: " . mysqli_error($db));
+                        }
                     }
+                    
+                    mysqli_commit($db);
+                    
+                    $_SESSION['cart'] = [];
+                    
+                    $success = "Pesanan berhasil dibuat! Terima kasih telah berbelanja.";
+                    header("refresh:2;url=orders.php");
+                    
+                } catch (Exception $e) {
+                    mysqli_rollback($db);
+                    $error = $e->getMessage();
                 }
-                
-                // Commit transaksi
-                mysqli_commit($db);
-                
-                // Kosongkan keranjang
-                $_SESSION['cart'] = [];
-                
-                $success = "Pesanan berhasil dibuat! Terima kasih telah berbelanja.";
-                header("refresh:2;url=orders.php");
-                
-            } catch (Exception $e) {
-                mysqli_rollback($db);
-                $error = $e->getMessage();
             }
         }
     }
 }
 
-// Hitung total keranjang
-$cart_total = 0;
-$cart_items = 0;
+// Hitung total harga dan jumlah item di keranjang (buat ditampilin di ringkasan)
+$cart_total = 0; // total harga
+$cart_items = 0; // total item
 foreach ($_SESSION['cart'] as $item) {
-    $cart_total += $item['price'] * $item['quantity'];
-    $cart_items += $item['quantity'];
+    $cart_total += $item['price'] * $item['quantity']; // harga x jumlah
+    $cart_items += $item['quantity']; // tambah jumlah item
 }
 ?>
 
@@ -153,10 +156,13 @@ foreach ($_SESSION['cart'] as $item) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keranjang Belanja - Apotek Online</title>
-    <link rel="stylesheet" href="../../assets/css/user.css">
+    <link rel="stylesheet" href="../assets/css/user.css">
+
+    <script src="../assets/js/global.js"></script>
+    <script src="../assets/js/user.js"></script>
 </head>
 <body>
-    <?php include "../../layout/userheader.php" ?>
+    <?php include "../layout/userheader.php" ?>
     
     <div class="container">
         <?php if ($error): ?>

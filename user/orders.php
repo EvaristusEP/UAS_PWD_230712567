@@ -1,13 +1,11 @@
 <?php
-// orders.php - Halaman daftar pesanan user
-include '../../database.php';
+include '../config/database.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    redirect('../../login.php');
+    redirect('../auth/login.php');
 }
 
-// Hitung item di keranjang
 $cart_items = 0;
 if (isset($_SESSION['cart'])) {
     foreach ($_SESSION['cart'] as $item) {
@@ -17,7 +15,6 @@ if (isset($_SESSION['cart'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Ambil semua pesanan user
 $query = "SELECT o.*, 
           (SELECT COUNT(*) FROM order_details WHERE order_id = o.id) as total_items
           FROM orders o 
@@ -32,10 +29,13 @@ $orders = mysqli_query($db, $query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesanan Saya - Apotek Online</title>
-    <link rel="stylesheet" href="../../assets/css/user.css">
+    <link rel="stylesheet" href="../assets/css/user.css">
+
+     <script src="../assets/js/global.js"></script>
+    <script src="../assets/js/user.js"></script>
 </head>
 <body>
-    <?php include "../../layout/userheader.php" ?>
+    <?php include "../layout/userheader.php" ?>
     
     <div class="container">
         <h2>Riwayat Pesanan Saya</h2>

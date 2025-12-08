@@ -1,14 +1,12 @@
 <?php
-// profile.php - Halaman profil dan update profil
-include '../../database.php';
+include '../config/database.php';
 session_start();
 
-// Cek apakah user sudah login
 if (!isset($_SESSION['user_id'])) {
-    redirect('login.php');
+    redirect('../auth/login.php');
 }
 
-// Hitung item di keranjang
+// Hitung cart items
 $cart_items = 0;
 if (isset($_SESSION['cart'])) {
     foreach ($_SESSION['cart'] as $item) {
@@ -20,30 +18,31 @@ $user_id = $_SESSION['user_id'];
 $error = '';
 $success = '';
 
-// Ambil data user dari database
 $query = "SELECT * FROM users WHERE id='$user_id'";
 $result = mysqli_query($db, $query);
 $user = mysqli_fetch_assoc($result);
 
-// Proses update profil
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['update_profile'])) {
+        $username = $_POST['username'];
         $full_name = ($_POST['full_name']);
         $email = ($_POST['email']);
         $address = ($_POST['address']);
         
-        // Cek apakah email sudah digunakan user lain
+        $check_username = mysqli_query($db, "SELECT id FROM users WHERE username='$username' AND id != '$user_id'");
         $check_email = mysqli_query($db, "SELECT id FROM users WHERE email='$email' AND id != '$user_id'");
         
-        if (mysqli_num_rows($check_email) > 0) {
+        if (mysqli_num_rows($check_username) > 0) {
+            $error = "Username sudah digunakan oleh user lain!";
+        } elseif (mysqli_num_rows($check_email) > 0) {
             $error = "Email sudah digunakan oleh user lain!";
         } else {
-            $update_query = "UPDATE users SET full_name='$full_name', email='$email', address='$address' WHERE id='$user_id'";
+            $update_query = "UPDATE users SET username='$username', full_name='$full_name', email='$email', address='$address' WHERE id='$user_id'";
             
             if (mysqli_query($db, $update_query)) {
                 $success = "Profil berhasil diupdate!";
+                $_SESSION['username'] = $username;
                 $_SESSION['full_name'] = $full_name;
-                // Refresh data user
                 $result = mysqli_query($db, "SELECT * FROM users WHERE id='$user_id'");
                 $user = mysqli_fetch_assoc($result);
             } else {
@@ -62,36 +61,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             if (!in_array($filetype, $allowed)) {
                 $error = "Format file tidak diizinkan! Hanya JPG, JPEG, PNG, GIF.";
-            } elseif ($filesize > 2 * 1024 * 1024) { // Max 2MB
+            } elseif ($filesize > 2 * 1024 * 1024) {
                 $error = "Ukuran file terlalu besar! Maksimal 2MB.";
             } else {
-                // Buat nama file unik
                 $new_filename = 'profile_' . $user_id . '_' . time() . '.' . $filetype;
-                $upload_path = 'uploads/profiles/' . $new_filename;
+                $upload_path = '../uploads/profiles/' . $new_filename;
                 
-                // Buat folder jika belum ada
                 if (!file_exists('uploads/profiles')) {
                     mkdir('uploads/profiles', 0777, true);
                 }
                 
                 // Upload file
                 if (move_uploaded_file($_FILES['photo_profile']['tmp_name'], $upload_path)) {
-                    // Hapus foto lama jika bukan default
-                    if ($user['photo_profile'] != 'default.jpg' && file_exists('uploads/profiles/' . $user['photo_profile'])) {
-                        unlink('uploads/profiles/' . $user['photo_profile']);
+
+                    // Path file lama
+                    $old_file = '../uploads/profiles/' . $user['photo_profile'];
+
+                    if (
+                        !empty($user['photo_profile']) &&
+                        $user['photo_profile'] != 'default.jpg' &&
+                        file_exists($old_file) &&
+                        is_file($old_file)
+                    ) {
+                        unlink($old_file);
                     }
-                    
-                    // Update database
+
                     $update_photo = "UPDATE users SET photo_profile='$new_filename' WHERE id='$user_id'";
                     if (mysqli_query($db, $update_photo)) {
                         $success = "Foto profil berhasil diupdate!";
+                        
                         // Refresh data user
                         $result = mysqli_query($db, "SELECT * FROM users WHERE id='$user_id'");
                         $user = mysqli_fetch_assoc($result);
                     }
+
                 } else {
                     $error = "Upload file gagal!";
                 }
+
             }
         } else {
             $error = "Pilih file terlebih dahulu!";
@@ -126,46 +133,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Proses hapus akun
     if (isset($_POST['delete_account'])) {
-        $confirm_password = $_POST['confirm_delete_password'];
+        mysqli_begin_transaction($db);
         
-        if (empty($confirm_password)) {
-            $error = "Masukkan password untuk konfirmasi!";
-        } elseif (!password_verify($confirm_password, $user['password'])) {
-            $error = "Password salah!";
-        } else {
-            // Mulai transaksi
-            mysqli_begin_transaction($db);
-            
-            try {
-                // Hapus foto profil jika ada
-                if ($user['photo_profile'] != 'default.jpg' && file_exists('uploads/profiles/' . $user['photo_profile'])) {
-                    unlink('uploads/profiles/' . $user['photo_profile']);
-                }
-                
-                // Hapus semua pesanan user (akan cascade ke order_details)
-                $delete_orders = "DELETE FROM orders WHERE user_id='$user_id'";
-                mysqli_query($db, $delete_orders);
-                
-                // Hapus user
-                $delete_user = "DELETE FROM users WHERE id='$user_id'";
-                if (!mysqli_query($db, $delete_user)) {
-                    throw new Exception("Gagal menghapus akun!");
-                }
-                
-                // Commit transaksi
-                mysqli_commit($db);
-                
-                // Hancurkan session
-                session_destroy();
-                
-                // Redirect ke register dengan pesan
-                header("Location: ../../login.php");
-                exit();
-                
-            } catch (Exception $e) {
-                mysqli_rollback($db);
-                $error = $e->getMessage();
+        try {
+            if ($user['photo_profile'] != 'default.jpg' && file_exists('../uploads/profiles/' . $user['photo_profile'])) {
+                unlink('../uploads/profiles/' . $user['photo_profile']);
             }
+            
+            mysqli_query($db, "UPDATE orders SET user_id = NULL WHERE user_id='$user_id'");
+            
+            $delete_user = "DELETE FROM users WHERE id='$user_id'";
+            if (!mysqli_query($db, $delete_user)) {
+                throw new Exception("Gagal menghapus akun!");
+            }
+            
+            mysqli_commit($db);
+            
+            session_destroy();
+            
+            header("Location: ../auth/login.php");
+            exit();
+            
+        } catch (Exception $e) {
+            mysqli_rollback($db);
+            $error = $e->getMessage();
         }
     }
 }
@@ -177,10 +168,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Saya - Apotek Online</title>
-    <link rel="stylesheet" href="../../assets/css/user.css">
+    <link rel="stylesheet" href="../assets/css/user.css">
+
+     <script src="../assets/js/global.js"></script>
+    <script src="../assets/js/user.js"></script>
 </head>
 <body>
-    <?php include "../../layout/userheader.php" ?>
+    <?php include "../layout/userheader.php" ?>
     
     <div class="container">
         <?php if ($error): ?>
@@ -195,10 +189,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="profile-card">
                 <?php
                 $photo_path = $user['photo_profile'] != 'default.jpg' 
-                    ? 'uploads/profiles/' . $user['photo_profile'] 
+                    ? '../uploads/profiles/' . $user['photo_profile'] 
                     : 'https://via.placeholder.com/150';
                 ?>
-                <img src="<?php echo $photo_path; ?>" alt="Foto Profil" class="profile-image">
+                <img src="<?php echo $photo_path; ?>" alt="" class="profile-image">
                 <h3><?php echo htmlspecialchars($user['full_name']); ?></h3>
                 <p>@<?php echo htmlspecialchars($user['username']); ?></p>
                 <p><?php echo htmlspecialchars($user['email']); ?></p>
@@ -217,9 +211,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <h2>Edit Informasi Profil</h2>
                     <form method="POST" action="">
                         <div class="form-group">
-                            <label>Username</label>
-                            <input type="text" value="<?php echo htmlspecialchars($user['username']); ?>" disabled>
-                            <small style="color: #999;">Username tidak dapat diubah</small>
+                            <label for="username">Username *</label>
+                            <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
                         </div>
                         
                         <div class="form-group">
@@ -266,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                         
                         <div class="form-group">
-                            <label for="new_password">Password Baru * (min. 6 karakter)</label>
+                            <label for="new_password">Password Baru * (min. 8 karakter)</label>
                             <input type="password" id="new_password" name="new_password" required>
                         </div>
                         
@@ -282,39 +275,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <!-- Tab Hapus Akun -->
                 <div id="delete" class="tab-content">
                     <h2 style="color: #dc3545;">Hapus Akun</h2>
-                    
-                    <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                        <h3 style="color: #856404; margin-bottom: 10px;">Peringatan!</h3>
-                        <p style="color: #856404; line-height: 1.6;">
-                            Menghapus akun akan menghapus secara permanen:
-                        </p>
-                        <ul style="color: #856404; margin: 10px 0 0 20px;">
-                            <li>Semua data profil Anda</li>
-                            <li>Riwayat pesanan Anda</li>
-                            <li>Foto profil Anda</li>
-                        </ul>
-                        <p style="color: #dc3545; font-weight: 600; margin-top: 15px;">
-                            Tindakan ini tidak dapat dibatalkan!
-                        </p>
-                    </div>
+                    <p>Menghapus akun akan menghapus semua data Anda secara permanen.</p>
                     
                     <form method="POST" action="" onsubmit="return confirmDelete()">
-                        <div class="form-group">
-                            <label for="confirm_delete_password">Masukkan Password Anda *</label>
-                            <input type="password" id="confirm_delete_password" name="confirm_delete_password" required 
-                                   placeholder="Masukkan password untuk konfirmasi">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="confirm_delete_text">Ketik "HAPUS" untuk konfirmasi *</label>
-                            <input type="text" id="confirm_delete_text" name="confirm_delete_text" required 
-                                   placeholder="Ketik kata HAPUS (huruf besar)">
-                            <small style="color: #999;">Ketik kata "HAPUS" (tanpa tanda petik) untuk melanjutkan</small>
-                        </div>
-                        
                         <button type="submit" name="delete_account" 
-                                style="background: #dc3545; width: 100%;">
-                            Hapus Akun Saya
+                                style="background: #dc3545; width: 100%; margin-top: 20px;">
+                            Hapus Akun
                         </button>
                     </form>
                 </div>
@@ -340,7 +306,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         function confirmDelete() {
-            return confirm('APAKAH ANDA YAKIN?\n\nAnda akan menghapus akun Anda secara permanen!\nSemua data akan hilang dan tidak dapat dikembalikan.\n\nKlik OK untuk melanjutkan atau Cancel untuk membatalkan.');
+            return confirm('Apakah Anda yakin ingin menghapus akun?\n\nSemua data akan dihapus secara permanen dan tidak dapat dikembalikan.');
         }
     </script>
 </body>

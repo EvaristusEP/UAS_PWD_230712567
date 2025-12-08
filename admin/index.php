@@ -1,12 +1,9 @@
 <?php
-// admin/index.php - Dashboard admin
-include '../../database.php';
-
+include '../config/database.php';
 session_start();
 
-// Cek apakah user sudah login dan role admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
-    redirect('../login.php');
+    redirect('../auth/login.php');
 }
 
 // Statistik
@@ -15,7 +12,6 @@ $total_medicines = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as tota
 $total_orders = mysqli_fetch_assoc(mysqli_query($db, "SELECT COUNT(*) as total FROM orders"))['total'];
 $total_revenue = mysqli_fetch_assoc(mysqli_query($db, "SELECT SUM(total_price) as total FROM orders WHERE status='completed'"))['total'] ?? 0;
 
-// Pesanan terbaru
 $recent_orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name 
                                       FROM orders o 
                                       JOIN users u ON o.user_id = u.id 
@@ -28,10 +24,10 @@ $recent_orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - Apotek Online</title>
-    <link rel="stylesheet" href="../../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
-    <?php include "../../layout/adminHeader.html" ?>
+    <?php include "../layout/adminHeader.html" ?>
     
     <div class="container">
         <div class="welcome">

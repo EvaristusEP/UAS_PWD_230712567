@@ -1,22 +1,19 @@
 <?php
-// order-detail.php - Halaman detail pesanan
-include '../../database.php';
+include '../config/database.php';
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    redirect('login.php');
+    redirect('../auth/login.php');
 }
 
 $user_id = $_SESSION['user_id'];
 
-// Ambil ID order dari URL
 if (!isset($_GET['id'])) {
     redirect('orders.php');
 }
 
 $order_id = ($_GET['id']);
 
-// Ambil data order
 $order_query = "SELECT * FROM orders WHERE id='$order_id' AND user_id='$user_id'";
 $order_result = mysqli_query($db, $order_query);
 
@@ -26,7 +23,6 @@ if (mysqli_num_rows($order_result) == 0) {
 
 $order = mysqli_fetch_assoc($order_result);
 
-// Ambil detail items order
 $details_query = "SELECT od.*, m.name, m.category, m.description 
                  FROM order_details od
                  JOIN medicines m ON od.medicine_id = m.id
@@ -50,10 +46,13 @@ if (isset($_SESSION['cart'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Pesanan #<?php echo $order_id; ?> - Apotek Online</title>
-    <link rel="stylesheet" href="../../assets/css/user.css">
+    <link rel="stylesheet" href="../assets/css/user.css">
+
+     <script src="../assets/js/global.js"></script>
+    <script src="../assets/js/user.js"></script>
 </head>
 <body>
-    <?php include "../../layout/userheader.php" ?>
+    <?php include "../layout/userheader.php" ?>
     
     <div class="container">
         <div class="detail-card">

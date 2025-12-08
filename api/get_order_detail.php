@@ -1,6 +1,6 @@
 <?php
 // admin/get_order_detail.php - Fetch order detail for modal
-include '../../database.php';
+include '../config/database.php';
 session_start();
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {

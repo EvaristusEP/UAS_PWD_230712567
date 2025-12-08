@@ -1,29 +1,6 @@
-
-
 <?php
-// index.php - Halaman utama untuk user (daftar obat)
-include '../../database.php';
-session_start();
+include 'config/database.php';
 
-// Cek apakah user sudah login
-if (!isset($_SESSION['user_id'])) {
-    redirect('login.php');
-}
-
-// Redirect admin ke dashboard admin
-if ($_SESSION['role'] == 'admin') {
-    redirect('admin/index.php');
-}
-
-// Hitung item di keranjang
-$cart_items = 0;
-if (isset($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $item) {
-        $cart_items += $item['quantity'];
-    }
-}
-
-// Ambil data obat dari database
 $search = '';
 $category_filter = '';
 
@@ -62,7 +39,7 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
     <link rel="stylesheet" href="../../assets/css/user.css">
 </head>
 <body>
-    <?php include "../../layout/userheader.php" ?>
+    <?php include "layout/indexHeader.html" ?>
     
     <div class="container">
         <div class="welcome-banner">
@@ -96,8 +73,16 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
             <div class="medicine-grid">
                 <?php while ($medicine = mysqli_fetch_assoc($medicines)): ?>
                     <div class="medicine-card">
-                        <div class="medicine-image" style="display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">
-                            
+                        <div class="medicine-image">
+                            <?php if (!empty($medicine['image']) && file_exists('uploads/' . $medicine['image'])): ?>
+                                <img src="uploads/<?php echo htmlspecialchars($medicine['image']); ?>" 
+                                     alt="<?php echo htmlspecialchars($medicine['name']); ?>"
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            <?php else: ?>
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #e0e0e0; color: #666; font-size: 14px;">
+                                    Tidak ada gambar
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div class="medicine-content">
                             <span class="medicine-category"><?php echo htmlspecialchars($medicine['category']); ?></span>
@@ -116,7 +101,7 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
                                 </div>
                             </div>
                             <?php if ($medicine['stock'] > 0): ?>
-                                <form method="POST" action="cart.php" style="display: flex; gap: 10px; margin-top: 10px;">
+                                <form method="POST" action="auth/login.php" style="display: flex; gap: 10px; margin-top: 10px;">
                                     <input type="hidden" name="medicine_id" value="<?php echo $medicine['id']; ?>">
                                     <input type="number" name="quantity" value="1" min="1" max="<?php echo $medicine['stock']; ?>" 
                                            style="width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">

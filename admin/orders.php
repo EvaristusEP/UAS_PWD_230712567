@@ -1,34 +1,48 @@
 <?php
-// admin/orders.php - Manajemen Pesanan
-include '../../database.php';
+include '../config/database.php';
 session_start();
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
-    redirect('../login.php');
+    redirect('../auth/login.php');
 }
 
 $success = '';
 $error = '';
 
-// Update status pesanan
+
+if (isset($_SESSION['success'])) {
+    $success = $_SESSION['success'];
+    unset($_SESSION['success']);
+}
+if (isset($_SESSION['error'])) {
+    $error = $_SESSION['error'];
+    unset($_SESSION['error']);
+}
+
+// Update status
 if (isset($_POST['update_status'])) {
-    $order_id = ($_POST['order_id']);
-    $status = ($_POST['status']);
+    $order_id = ($_POST['order_id']); 
+    $status = ($_POST['status']); 
+    
     
     $query = "UPDATE orders SET status='$status' WHERE id='$order_id'";
     if (mysqli_query($db, $query)) {
-        $success = "Status pesanan berhasil diupdate!";
+        $_SESSION['success'] = "Status pesanan berhasil diupdate!";
+        header('Location: orders.php');
+        exit();
     } else {
-        $error = "Gagal update status: " . mysqli_error($db);
+        $_SESSION['error'] = "Gagal update status: " . mysqli_error($db);
+        header('Location: orders.php');
+        exit();
     }
 }
 
-// Ambil semua pesanan dengan informasi user
+
 $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
                                (SELECT COUNT(*) FROM order_details WHERE order_id = o.id) as total_items
                                FROM orders o 
                                JOIN users u ON o.user_id = u.id 
-                               ORDER BY o.order_date DESC");
+                               ORDER BY o.order_date DESC"); 
 ?>
 
 <!DOCTYPE html>
@@ -37,20 +51,12 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Pesanan - Admin</title>
-    <link rel="stylesheet" href="../../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
-    <?php include "../../layout/adminHeader.html" ?>
+    <?php include "../layout/adminHeader.html" ?>
     
-    <div class="container">
-        <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo $error; ?></div>
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-            <div class="alert alert-success"><?php echo $success; ?></div>
-        <?php endif; ?>
-        
+    <div class="container">        
         <div class="card">
             <h2>Daftar Pesanan</h2>
             <table>
@@ -108,10 +114,19 @@ $orders = mysqli_query($db, "SELECT o.*, u.username, u.full_name, u.email,
         </div>
     </div>
     
+    <script src="../assets/js/admin.js"></script>
     <script>
+        // Show toast notification if there's a message
+        <?php if ($success): ?>
+            showToast('<?php echo addslashes($success); ?>', 'success');
+        <?php endif; ?>
+        
+        <?php if ($error): ?>
+            showToast('<?php echo addslashes($error); ?>', 'error');
+        <?php endif; ?>
+        
         function viewOrderDetail(orderId) {
-            // Fetch order details via AJAX
-            fetch('get_order_detail.php?id=' + orderId)
+            fetch('../api/get_order_detail.php?id=' + orderId)
                 .then(response => response.text())
                 .then(data => {
                     document.getElementById('orderDetails').innerHTML = data;

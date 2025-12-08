@@ -1,38 +1,73 @@
 <?php
-// admin/medicines.php - CRUD Obat
-include '../../database.php';
+include '../config/database.php';
 session_start();
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
-    redirect('../../login.php');
+    redirect('../auth/login.php');
 }
 
 $error = '';
 $success = '';
 
-// Proses Tambah Obat
+
+if (isset($_SESSION['success'])) {
+    $success = $_SESSION['success'];
+    unset($_SESSION['success']);
+}
+if (isset($_SESSION['error'])) {
+    $error = $_SESSION['error'];
+    unset($_SESSION['error']);
+}
+
 if (isset($_POST['add_medicine'])) {
+    
     $name = ($_POST['name']);
     $description = ($_POST['description']);
     $price = ($_POST['price']);
     $stock = ($_POST['stock']);
     $category = ($_POST['category']);
     
+    // Validasi
     if (empty($name) || empty($price) || empty($stock)) {
         $error = "Nama, harga, dan stok wajib diisi!";
     } else {
-        $query = "INSERT INTO medicines (name, description, price, stock, category) 
-                 VALUES ('$name', '$description', '$price', '$stock', '$category')";
+        // Handle upload gambar
+        $image = '';
+        if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+            $uploadDir = '../uploads/';
+            $fileExt = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+            $allowedExt = ['jpg', 'jpeg', 'png', 'gif'];
+            
+            if (in_array($fileExt, $allowedExt)) {
+                $fileName = uniqid() . '.' . $fileExt;
+                $uploadPath = $uploadDir . $fileName;
+                
+                if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
+                    $image = $fileName;
+                } else {
+                    $error = "Gagal upload gambar!";
+                }
+            } else {
+                $error = "Format gambar tidak valid. Gunakan JPG, PNG, atau GIF.";
+            }
+        }
         
-        if (mysqli_query($db, $query)) {
-            $success = "Obat berhasil ditambahkan!";
-        } else {
-            $error = "Gagal menambahkan obat: " . mysqli_error($db);
+        if (empty($error)) {
+            $query = "INSERT INTO medicines (name, description, price, stock, category, image) 
+                     VALUES ('$name', '$description', '$price', '$stock', '$category', '$image')";
+            
+            if (mysqli_query($db, $query)) {
+                $_SESSION['success'] = "Obat berhasil ditambahkan!";
+                header('Location: medicines.php');
+                exit();
+            } else {
+                $error = "Gagal menambahkan obat: " . mysqli_error($db);
+            }
         }
     }
 }
 
-// Proses Edit Obat
+// Update obat
 if (isset($_POST['edit_medicine'])) {
     $id = ($_POST['id']);
     $name = ($_POST['name']);
@@ -41,31 +76,69 @@ if (isset($_POST['edit_medicine'])) {
     $stock = ($_POST['stock']);
     $category = ($_POST['category']);
     
+    // Handle upload gambar baru
+    $imageUpdate = '';
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $uploadDir = '../uploads/';
+        $fileExt = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+        $allowedExt = ['jpg', 'jpeg', 'png', 'gif'];
+        
+        if (in_array($fileExt, $allowedExt)) {
+            $fileName = uniqid() . '.' . $fileExt;
+            $uploadPath = $uploadDir . $fileName;
+            
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
+                // Hapus gambar lama
+                $oldImage = mysqli_query($db, "SELECT image FROM medicines WHERE id='$id'");
+                $oldData = mysqli_fetch_assoc($oldImage);
+                if (!empty($oldData['image']) && file_exists($uploadDir . $oldData['image'])) {
+                    unlink($uploadDir . $oldData['image']);
+                }
+                $imageUpdate = ", image='$fileName'";
+            }
+        }
+    }
+    
     $query = "UPDATE medicines SET 
              name='$name', description='$description', price='$price', 
-             stock='$stock', category='$category' 
+             stock='$stock', category='$category'$imageUpdate 
              WHERE id='$id'";
     
     if (mysqli_query($db, $query)) {
-        $success = "Obat berhasil diupdate!";
+        $_SESSION['success'] = "Obat berhasil diupdate!";
+        header('Location: medicines.php');
+        exit();
     } else {
         $error = "Gagal update obat: " . mysqli_error($db);
     }
 }
 
-// Proses Hapus Obat
+// Hapus obat
 if (isset($_GET['delete'])) {
-    $id = ($_GET['delete']);
+    $id = ($_GET['delete']); 
+    
+    
+    $check = mysqli_query($db, "SELECT COUNT(*) as count FROM order_details WHERE medicine_id='$id'");
+    $result = mysqli_fetch_assoc($check);
+    
+    if ($result['count'] > 0) {
+        $_SESSION['error'] = "Obat tidak bisa dihapus karena sudah ada dalam pesanan!";
+        header('Location: medicines.php');
+        exit();
+    }
+    
     $query = "DELETE FROM medicines WHERE id='$id'";
     
     if (mysqli_query($db, $query)) {
-        $success = "Obat berhasil dihapus!";
+        $_SESSION['success'] = "Obat berhasil dihapus!";
+        header('Location: medicines.php');
+        exit();
     } else {
         $error = "Gagal hapus obat: " . mysqli_error($db);
     }
 }
 
-// Ambil semua obat
+
 $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
 ?>
 
@@ -75,20 +148,12 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Obat - Admin</title>
-    <link rel="stylesheet" href="../../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
-    <?php include "../../layout/adminHeader.html" ?>
+    <?php include "../layout/adminHeader.html" ?>
     
     <div class="container">
-        <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo $error; ?></div>
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-            <div class="alert alert-success"><?php echo $success; ?></div>
-        <?php endif; ?>
-        
         <!-- Form Tambah Obat -->
         <div class="card">
             <h2>Tambah Obat Baru</h2>
@@ -164,11 +229,12 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
                                        onclick="openEditModal(<?php echo htmlspecialchars(json_encode($medicine)); ?>)">
                                         Edit
                                     </a>
-                                    <a href="?delete=<?php echo $medicine['id']; ?>" 
-                                       class="btn-delete"
-                                       onclick="return confirm('Yakin hapus obat ini?')">
+                                    <a href="javascript:void(0)" 
+                                        class="btn-delete"
+                                        onclick="confirmDelete(<?php echo $medicine['id']; ?>)">
                                         Hapus
                                     </a>
+
                                 </div>
                             </td>
                         </tr>
@@ -186,7 +252,7 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
                 <span class="close-modal" onclick="closeEditModal()">&times;</span>
             </div>
             
-            <form method="POST" action="">
+            <form method="POST" action="" enctype="multipart/form-data">
                 <input type="hidden" name="id" id="edit_id">
                 
                 <div class="form-grid">
@@ -220,6 +286,11 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
                         <label>Deskripsi</label>
                         <textarea name="description" id="edit_description"></textarea>
                     </div>
+                    
+                    <div class="form-group">
+                        <label>Gambar Obat (Kosongkan jika tidak ingin ganti)</label>
+                        <input type="file" name="image" accept="image/*">
+                    </div>
                 </div>
                 
                 <button type="submit" name="edit_medicine">Update Obat</button>
@@ -227,7 +298,21 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
         </div>
     </div>
     
+    <script src="../assets/js/admin.js"></script>
     <script>
+        // Show toast notification if there's a message
+        <?php if ($success): ?>
+            <?php if (strpos($success, 'dihapus') !== false): ?>
+                showToast('<?php echo addslashes($success); ?>', 'delete');
+            <?php else: ?>
+                showToast('<?php echo addslashes($success); ?>', 'success');
+            <?php endif; ?>
+        <?php endif; ?>
+        
+        <?php if ($error): ?>
+            showToast('<?php echo addslashes($error); ?>', 'error');
+        <?php endif; ?>
+        
         function openEditModal(medicine) {
             document.getElementById('edit_id').value = medicine.id;
             document.getElementById('edit_name').value = medicine.name;
