@@ -31,16 +31,38 @@ if (isset($_POST['add_medicine'])) {
     if (empty($name) || empty($price) || empty($stock)) {
         $error = "Nama, harga, dan stok wajib diisi!";
     } else {
+        // Handle upload gambar
+        $image = '';
+        if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+            $uploadDir = '../uploads/';
+            $fileExt = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+            $allowedExt = ['jpg', 'jpeg', 'png', 'gif'];
+            
+            if (in_array($fileExt, $allowedExt)) {
+                $fileName = uniqid() . '.' . $fileExt;
+                $uploadPath = $uploadDir . $fileName;
+                
+                if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
+                    $image = $fileName;
+                } else {
+                    $error = "Gagal upload gambar!";
+                }
+            } else {
+                $error = "Format gambar tidak valid. Gunakan JPG, PNG, atau GIF.";
+            }
+        }
         
-        $query = "INSERT INTO medicines (name, description, price, stock, category) 
-                 VALUES ('$name', '$description', '$price', '$stock', '$category')";
-        
-        if (mysqli_query($db, $query)) {
-            $_SESSION['success'] = "Obat berhasil ditambahkan!";
-            header('Location: medicines.php');
-            exit();
-        } else {
-            $error = "Gagal menambahkan obat: " . mysqli_error($db);
+        if (empty($error)) {
+            $query = "INSERT INTO medicines (name, description, price, stock, category, image) 
+                     VALUES ('$name', '$description', '$price', '$stock', '$category', '$image')";
+            
+            if (mysqli_query($db, $query)) {
+                $_SESSION['success'] = "Obat berhasil ditambahkan!";
+                header('Location: medicines.php');
+                exit();
+            } else {
+                $error = "Gagal menambahkan obat: " . mysqli_error($db);
+            }
         }
     }
 }
@@ -54,10 +76,32 @@ if (isset($_POST['edit_medicine'])) {
     $stock = ($_POST['stock']);
     $category = ($_POST['category']);
     
+    // Handle upload gambar baru
+    $imageUpdate = '';
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $uploadDir = '../uploads/';
+        $fileExt = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+        $allowedExt = ['jpg', 'jpeg', 'png', 'gif'];
+        
+        if (in_array($fileExt, $allowedExt)) {
+            $fileName = uniqid() . '.' . $fileExt;
+            $uploadPath = $uploadDir . $fileName;
+            
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
+                // Hapus gambar lama
+                $oldImage = mysqli_query($db, "SELECT image FROM medicines WHERE id='$id'");
+                $oldData = mysqli_fetch_assoc($oldImage);
+                if (!empty($oldData['image']) && file_exists($uploadDir . $oldData['image'])) {
+                    unlink($uploadDir . $oldData['image']);
+                }
+                $imageUpdate = ", image='$fileName'";
+            }
+        }
+    }
     
     $query = "UPDATE medicines SET 
              name='$name', description='$description', price='$price', 
-             stock='$stock', category='$category' 
+             stock='$stock', category='$category'$imageUpdate 
              WHERE id='$id'";
     
     if (mysqli_query($db, $query)) {
@@ -208,7 +252,7 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
                 <span class="close-modal" onclick="closeEditModal()">&times;</span>
             </div>
             
-            <form method="POST" action="">
+            <form method="POST" action="" enctype="multipart/form-data">
                 <input type="hidden" name="id" id="edit_id">
                 
                 <div class="form-grid">
@@ -241,6 +285,11 @@ $medicines = mysqli_query($db, "SELECT * FROM medicines ORDER BY name ASC");
                     <div class="form-group full">
                         <label>Deskripsi</label>
                         <textarea name="description" id="edit_description"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Gambar Obat (Kosongkan jika tidak ingin ganti)</label>
+                        <input type="file" name="image" accept="image/*">
                     </div>
                 </div>
                 

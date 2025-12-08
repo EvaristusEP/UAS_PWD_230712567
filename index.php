@@ -73,8 +73,16 @@ $categories = mysqli_query($db, "SELECT DISTINCT category FROM medicines ORDER B
             <div class="medicine-grid">
                 <?php while ($medicine = mysqli_fetch_assoc($medicines)): ?>
                     <div class="medicine-card">
-                        <div class="medicine-image" style="display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">
-                            
+                        <div class="medicine-image">
+                            <?php if (!empty($medicine['image']) && file_exists('uploads/' . $medicine['image'])): ?>
+                                <img src="uploads/<?php echo htmlspecialchars($medicine['image']); ?>" 
+                                     alt="<?php echo htmlspecialchars($medicine['name']); ?>"
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            <?php else: ?>
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #e0e0e0; color: #666; font-size: 14px;">
+                                    Tidak ada gambar
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div class="medicine-content">
                             <span class="medicine-category"><?php echo htmlspecialchars($medicine['category']); ?></span>

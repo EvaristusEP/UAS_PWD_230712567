@@ -34,7 +34,7 @@ if (isset($_POST['add_to_cart'])) {
         }
         $success = "Obat berhasil ditambahkan ke keranjang!";
     } else {
-        $error = "Stok tidak mencukupi!"; // waduh stoknya kurang
+        $error = "Stok tidak mencukupi!";
     }
 }
 
