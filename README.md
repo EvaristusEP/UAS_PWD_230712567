@@ -98,18 +98,14 @@ Kredensial ini hanya untuk lingkungan lokal dan sebaiknya diganti sebelum aplika
 
 ## Data dummy
 
-Ya. Aplikasi membutuhkan data awal untuk bisa diperagakan dengan baik. File `database.sql` telah menyediakan data dummy yang aman untuk demo, mencakup:
+Aplikasi membutuhkan data awal untuk bisa diperagakan dengan baik. File `database.sql` telah menyediakan data dummy yang aman untuk demo, mencakup:
 
 - akun admin dan pelanggan;
 - beberapa produk obat dengan kategori, harga, dan stok;
 - satu contoh pesanan beserta detailnya.
 
-Jangan gunakan data demo maupun kredensial di atas untuk lingkungan produksi.
 
 ## Catatan portfolio
 
 Fokus proyek ini adalah implementasi alur pemesanan, manajemen inventori, dan pemisahan akses pelanggan/admin. Untuk penggunaan produksi, perlu ditambahkan pengamanan dan kesiapan operasional lebih lanjut, seperti validasi input yang lebih ketat, prepared statements, proteksi CSRF, pengelolaan konfigurasi melalui environment variables, serta integrasi pembayaran yang sesungguhnya.
 
-## Lisensi
-
-Belum ditentukan. Tambahkan lisensi yang sesuai sebelum penggunaan atau distribusi lebih lanjut.
