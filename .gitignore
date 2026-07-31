@@ -1,0 +1,12 @@
+# Local editor and operating-system files
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local PHP configuration overrides
+config/database.local.php
+
+# Keep the two sample images, but do not publish newly uploaded files by default.
+uploads/*
+!uploads/692b41d167481.jpeg
+!uploads/6936e777abf26.jpg
